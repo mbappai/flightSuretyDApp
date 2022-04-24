@@ -91,13 +91,15 @@ contract FlightSuretyApp {
     * @dev Contract constructor
     *
     */
-    constructor ( address dataContract ){
+    constructor ( address dataContract){
+
         contractOwner = msg.sender;
-        firstAirline = msg.sender;
+
+        flightSuretyData = IFlightSuretyData(dataContract);
 
         // Keep track of registered airlines
+        // registerAirline(firstAirline);
         registeredAirlinesCount.add(1);
-        flightSuretyData = IFlightSuretyData(dataContract);
     }
 
     /********************************************************************************************/
@@ -146,10 +148,10 @@ contract FlightSuretyApp {
     * @dev Add an airline to the registration queue
     *
     */   
-    function registerAirline ( address newAirline ) external requireIsOperational()  requireIsRegisteredAirline(msg.sender) returns(bool success, uint256 votes)
+    function registerAirline ( address newAirline ) public requireIsOperational()  requireIsRegisteredAirline(msg.sender) returns(bool success, uint256 votes)
     {
 
-        // Use multiparty consensus of 50% of registered airlines if airlines reaches atleast 4
+        // Use multiparty consensus of 50% of registered airlines if it reaches atleast 4
         if(registeredAirlinesCount >= MULTIPARTY_THRESHOLD){
 
         // Check for duplicate votes
@@ -175,7 +177,6 @@ contract FlightSuretyApp {
         // Keep track of registered airlines by incrementing on each successful registration
         registeredAirlinesCount.add(1);
 
-        // All registered airlines should provide seed funding of 10 ether after registration
         return (success, 0);
     }
 

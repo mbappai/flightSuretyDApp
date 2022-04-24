@@ -9,7 +9,7 @@ contract FlightSuretyData {
     /********************************************************************************************/
     /*                                       DATA VARIABLES                                     */
     /********************************************************************************************/
-    address private firstAirline;                                       // Account of first airline deployed with contract
+    // address private firstAirline;                                       // Account of first airline deployed with contract
     address private contractOwner;                                      // Account used to deploy contract
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
     
@@ -42,10 +42,12 @@ contract FlightSuretyData {
     * @dev Constructor
     *      The deploying account becomes contractOwner
     */
-    constructor () 
+    constructor ( address firstAirline) 
     {
         contractOwner = msg.sender;
-        firstAirline = msg.sender;
+
+        // Initialize first airline
+        airlines[firstAirline].isRegistered = true;
     }
 
     /********************************************************************************************/
@@ -92,7 +94,6 @@ contract FlightSuretyData {
     function isOperational() 
                             external 
                             view 
-                            requireContractOwner
                             returns(bool) 
     {
         return operational;
@@ -117,7 +118,7 @@ contract FlightSuretyData {
         operational = mode;
     }
 
-    function authorizeContract (address contractAddress) external requireContractOwner{
+    function authorizeContract (address contractAddress) external {
         authorizedContracts[contractAddress] = true;
     }
 
