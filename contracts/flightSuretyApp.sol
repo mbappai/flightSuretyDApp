@@ -5,7 +5,7 @@ pragma solidity ^0.8.13;
 // OpenZeppelin's SafeMath library, when used correctly, protects agains such bugs
 // More info: https://www.nccgroup.trust/us/about-us/newsroom-and-events/blog/2018/november/smart-contract-insecurity-bad-arithmetic/
 
-import "../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /************************************************** */
 /* FlightSurety Smart Contract                      */
@@ -14,7 +14,7 @@ contract FlightSuretyApp {
     using SafeMath for uint256; // Allow SafeMath functions to be called for all uint256 types (similar to "prototype" in Javascript)
 
 
-    InterfaceFlightSuretyData flightSuretyData;
+    IFlightSuretyData flightSuretyData;
 
     /********************************************************************************************/
     /*                                       DATA VARIABLES                                     */
@@ -97,7 +97,7 @@ contract FlightSuretyApp {
 
         // Keep track of registered airlines
         registeredAirlinesCount.add(1);
-        flightSuretyData = InterfaceFlightSuretyData(dataContract);
+        flightSuretyData = IFlightSuretyData(dataContract);
     }
 
     /********************************************************************************************/
@@ -169,7 +169,7 @@ contract FlightSuretyApp {
         flightSuretyData.registerAirline(newAirline);
 
         // Provide seed funding
-        // flightSuretyData.fund(newAirline)
+        // flightSuretyData.fund(newAirline);
         }
 
         // Keep track of registered airlines by incrementing on each successful registration
@@ -184,12 +184,7 @@ contract FlightSuretyApp {
     * @dev Register a future flight for insuring.
     *
     */  
-    function registerFlight
-                                (
-                                )
-                                external
-                                pure
-    {
+    function registerFlight ( ) external pure{
 
     }
     
@@ -197,16 +192,12 @@ contract FlightSuretyApp {
     * @dev Called after oracle has updated flight status
     *
     */  
-    function processFlightStatus
-                                (
-                                    address airline,
-                                    string memory flight,
-                                    uint256 timestamp,
-                                    uint8 statusCode
-                                )
-                                internal
-                                pure
-    {
+    function processFlightStatus ( 
+        address airline, 
+        string memory flight, 
+        uint256 timestamp, 
+        uint8 statusCode ) internal pure{
+
     }
 
 
@@ -411,8 +402,9 @@ contract FlightSuretyApp {
 
 }   
 
-interface InterfaceFlightSuretyData{
+interface IFlightSuretyData{
     function registerAirline(address airline) external;
     function isOperational() external view returns (bool);
     function isAirline(address) external view returns (bool);
+    // function fund() external payable;
 }

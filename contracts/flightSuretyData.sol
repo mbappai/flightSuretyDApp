@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "../node_modules/@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract FlightSuretyData {
     using SafeMath for uint256;
@@ -92,7 +92,7 @@ contract FlightSuretyData {
     function isOperational() 
                             external 
                             view 
-                            requireIsAuthorizedCaller
+                            requireContractOwner
                             returns(bool) 
     {
         return operational;
@@ -184,7 +184,7 @@ contract FlightSuretyData {
     *      resulting in insurance payouts, the contract should be self-sustaining
     *
     */   
-    // function fund () public payable {
+    // function fund () external payable {
 
     //     // Require that an airline doesn't pay for seed funds more than once.
     //     require(!airlines[msg.sender].hasPaidSeedFund,"Thank you, but you can only contribute once.");
