@@ -15,7 +15,8 @@ contract FlightSuretyData {
     
     struct airlineInfo{
         bool isRegistered;
-        uint seedFund;
+        uint256 seedFund;
+        bytes32 name;
     }
     mapping (address => airlineInfo) airlines;
 
@@ -37,7 +38,7 @@ contract FlightSuretyData {
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
 
-    event PayedSeedFund(uint amount);
+    event HasPayedSeedFund(uint amount);
 
     /**
     * @dev Constructor
@@ -49,6 +50,8 @@ contract FlightSuretyData {
 
         // Initialize first airline
         airlines[firstAirline].isRegistered = true;
+        airlines[firstAirline].seedFund = 10 ether;
+        airlines[firstAirline].name = 'Arik Airways';
     }
 
     /********************************************************************************************/
@@ -104,10 +107,17 @@ contract FlightSuretyData {
         return airlines[airline].isRegistered;
     }
 
-    function hasPaidSeedFund ( address airline, uint amount) external view returns (bool){
-        airlines[airline].seedFund = amount;
-        return true;
+
+    /**
+    * @dev Check if airline has paid seed fund
+    *
+    * @return A bool if seedFund amount is greater than initial value of 0
+    */  
+    function hasPaidSeedFund ( address airline) external view returns (bool){
+        return airlines[airline].seedFund > 0;
+        
     }
+
     /**
     * @dev Sets contract operations on/off
     *
@@ -204,20 +214,16 @@ contract FlightSuretyData {
         airlines[msg.sender].seedFund = msg.value;
 
         // emit event for successful payment
-        emit PayedSeedFund(msg.value);
+        emit HasPayedSeedFund(msg.value);
     }
 
-    function getFlightKey
-                        (
-                            address airline,
-                            string memory flight,
-                            uint256 timestamp
-                        )
-                        pure
-                        internal
-                        returns(bytes32) 
-    {
+    function getFlightKey (
+        address airline, 
+        string memory flight,
+        uint256 timestamp) pure internal returns(bytes32){
+
         return keccak256(abi.encodePacked(airline, flight, timestamp));
+
     }
 
     /**
