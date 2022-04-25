@@ -15,7 +15,7 @@ contract FlightSuretyData {
     
     struct airlineInfo{
         bool isRegistered;
-        bool hasPaidSeedFund;
+        uint seedFund;
     }
     mapping (address => airlineInfo) airlines;
 
@@ -37,6 +37,7 @@ contract FlightSuretyData {
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
 
+    event PayedSeedFund(uint amount);
 
     /**
     * @dev Constructor
@@ -99,10 +100,14 @@ contract FlightSuretyData {
         return operational;
     }
 
-    function isAirline(address airline) external view requireIsAuthorizedCaller returns (bool){
+    function isAirline(address airline) external view  returns (bool){
         return airlines[airline].isRegistered;
     }
 
+    function hasPaidSeedFund ( address airline, uint amount) external view returns (bool){
+        airlines[airline].seedFund = amount;
+        return true;
+    }
     /**
     * @dev Sets contract operations on/off
     *
@@ -185,19 +190,22 @@ contract FlightSuretyData {
     *      resulting in insurance payouts, the contract should be self-sustaining
     *
     */   
-    // function fund () external payable {
+    function fund () external payable {
 
-    //     // Require that an airline doesn't pay for seed funds more than once.
-    //     require(!airlines[msg.sender].hasPaidSeedFund,"Thank you, but you can only contribute once.");
+        // Require that an airline doesn't pay for seed funds more than once.
+        require(airlines[msg.sender].seedFund == 0,"Thank you, but you can only pay once.");
 
-    //     require(msg.value >= MINIMUM_SEED_FUND,"Please ensure to contribute a minimum of 10ether for the seed funding");
+        require(msg.value >= MINIMUM_SEED_FUND,"Please ensure to contribute a minimum of 10ether for the seed funding");
 
-    //     // Transfer value to contract balance
-    //     address(this).balance.add(msg.value);
+        // Transfer value to contract balance
+        address(this).balance.add(msg.value);
 
-    //     // Indicate that airline has made payment.
-    //     airlines[msg.sender].hasPaidSeedFund = true;
-    // }
+        // Set amount paid by airline.
+        airlines[msg.sender].seedFund = msg.value;
+
+        // emit event for successful payment
+        emit PayedSeedFund(msg.value);
+    }
 
     function getFlightKey
                         (
