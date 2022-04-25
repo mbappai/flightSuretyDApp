@@ -151,6 +151,9 @@ contract FlightSuretyApp {
     function registerAirline ( address newAirline ) public requireIsOperational()  requireIsRegisteredAirline(msg.sender) returns(bool success, uint256 votes)
     {
 
+        // Confirm msg.sender has paid seedFund before registering another airline
+        require(flightSuretyData.hasPaidSeedFund(msg.sender),"Sorry can't register new airline because you haven't payed seed fund.");
+
         // Use multiparty consensus of 50% of registered airlines if it reaches atleast 4
         if(registeredAirlinesCount >= MULTIPARTY_THRESHOLD){
 
@@ -406,6 +409,7 @@ contract FlightSuretyApp {
 interface IFlightSuretyData{
     function registerAirline(address airline) external;
     function isOperational() external view returns (bool);
-    function isAirline(address) external view returns (bool);
-    // function fund() external payable;
+    function isAirline(address airline) external view returns (bool);
+    function fund() external payable;
+    function hasPaidSeedFund(address airline) external view returns (bool);
 }
