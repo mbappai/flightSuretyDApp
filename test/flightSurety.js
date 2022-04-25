@@ -23,6 +23,14 @@ contract('Flight Surety Tests', async (accounts) => {
 
   });
 
+  it(`verify the registration of first Airline`,async function(){
+
+
+        let result = await config.flightSuretyData.isAirline.call(config.firstAirline,{from:config.owner});
+        assert.equal(result, true, "First flight was not successfully created")
+
+  })
+
   it(`(multiparty) can block access to setOperatingStatus() for non-Contract Owner account`, async function () {
 
       // Ensure that access is denied for non-Contract Owner account
@@ -72,6 +80,21 @@ contract('Flight Surety Tests', async (accounts) => {
 
   });
 
+  it(`(airline) can pay seed fund after registration`, async ()=>{
+
+    // ARRANGE
+    let registeredAirline = config.firstAirline;
+
+     // ACT
+    await config.flightSuretyData.fund({from:registeredAirline, value:web3.utils.toWei('1','ether')});
+
+    let result = await config.flightSuretyData.hasPaidSeedFund.call(registeredAirline);
+
+    // ASSERT
+    assert.equal(result, true, "Airline seed fund payment didn't go through");
+
+  })
+
   it('(airline) cannot register an Airline using registerAirline() if it is not funded', async () => {
     
     // ARRANGE
@@ -79,7 +102,11 @@ contract('Flight Surety Tests', async (accounts) => {
 
     // ACT
     try {
-        await config.flightSuretyApp.registerAirline(newAirline, {from: config.firstAirline});
+        // Check if seed fund has been paid
+        let hasPaid = config.flightSuretyData.hasPaidSeedFund.call(config.firstAirline);
+
+        if(hasPaid) await config.flightSuretyApp.registerAirline(newAirline, {from: config.firstAirline});
+        
     }
     catch(e) {
 
