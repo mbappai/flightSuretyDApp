@@ -80,21 +80,7 @@ contract('Flight Surety Tests', async (accounts) => {
 
   });
 
-  it(`(airline) can pay seed fund after registration`, async ()=>{
-
-    // ARRANGE
-    let registeredAirline = config.firstAirline;
-
-     // ACT
-    await config.flightSuretyData.fund({from:registeredAirline, value:web3.utils.toWei('1','ether')});
-
-    let result = await config.flightSuretyData.hasPaidSeedFund.call(registeredAirline);
-
-    // ASSERT
-    assert.equal(result, true, "Airline seed fund payment didn't go through");
-
-  })
-
+  
   it('(airline) cannot register an Airline using registerAirline() if it is not funded', async () => {
     
     // ARRANGE
@@ -103,9 +89,7 @@ contract('Flight Surety Tests', async (accounts) => {
     // ACT
     try {
         // Check if seed fund has been paid
-        let hasPaid = config.flightSuretyData.hasPaidSeedFund.call(config.firstAirline);
-
-        if(hasPaid) await config.flightSuretyApp.registerAirline(newAirline, {from: config.firstAirline});
+        await config.flightSuretyApp.registerAirline(newAirline, {from: config.firstAirline});
         
     }
     catch(e) {
@@ -117,6 +101,23 @@ contract('Flight Surety Tests', async (accounts) => {
     assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding");
 
   });
+
+
+  it(`(airline) can pay seed fund only after registration`, async ()=>{
+
+    // ARRANGE
+    let registeredAirline = config.firstAirline;
+
+     // ACT
+    await config.flightSuretyData.fund({from:registeredAirline, value:web3.utils.toWei('10','ether')});
+
+    let result = await config.flightSuretyData.hasPaidSeedFund.call(registeredAirline);
+
+    // ASSERT
+    assert.equal(result, true, "Airline seed fund payment didn't go through");
+
+  })
+
  
 
 });
