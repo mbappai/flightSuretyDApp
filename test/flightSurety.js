@@ -80,43 +80,102 @@ contract('Flight Surety Tests', async (accounts) => {
 
   });
 
+
   
-  it('(airline) cannot register an Airline using registerAirline() if it is not funded', async () => {
+  
+//   it('(airline) cannot register an Airline using registerAirline() if it is not funded', async () => {
+      
+//       // ARRANGE
+//       let newAirline = accounts[2];
+      
+      
+//       // ACT
+//       try {
+//           // Check if seed fund has been paid
+//           await config.flightSuretyApp.registerAirline(newAirline,'Virgin Nigeria', {from: config.firstAirline});
+          
+//         }
+//         catch(e) {
+            
+//         }
+//         let result = await config.flightSuretyData.isAirline.call(newAirline); 
+        
+//         // ASSERT
+//         assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding");
+        
+//     });
+    
+    // it(`(airline) can pay seed fund only after registration`, async ()=>{
+  
+    //   // ARRANGE
+    //   let registeredAirline = config.firstAirline;
+  
+    //    // ACT
+    //   await config.flightSuretyData.fund({from:registeredAirline, value:web3.utils.toWei('10','ether')});
+  
+    //   let result = await config.flightSuretyData.hasPaidSeedFund.call(registeredAirline);
+  
+    //   // ASSERT
+    //   assert.equal(result, true, "Airline seed fund payment didn't go through");
+  
+    // })
+
+  it('(airline) cannot register more than 4 airlines without multiparty consensus ', async () => {
     
     // ARRANGE
-    let newAirline = accounts[2];
+    let nigerianAirways = accounts[2];
+    let egyptAirways = accounts[3];
+    let ethopianAirways = accounts[4];
+    let emiratesAirways = accounts[5];
+    let turkishAirways = accounts[6];
 
     // ACT
     try {
-        // Check if seed fund has been paid
-        await config.flightSuretyApp.registerAirline(newAirline, {from: config.firstAirline});
+        // First airline tries to register 4 planes
+        await config.flightSuretyApp.registerAirline(nigerianAirways,'Nigerian airways', {from: config.firstAirline});
+        await config.flightSuretyData.fund({from:nigerianAirways, value: web3.utils.toWei('10', 'ether')});
+        
+        // EGYPT AIRWAYS REGISTRATION AND SEED FUNDING
+        await config.flightSuretyApp.registerAirline(egyptAirways, 'Egypt airways', {from: config.firstAirline});
+        await config.flightSuretyData.fund({from:egyptAirways, value: web3.utils.toWei('10', 'ether')});
+        
+        // ETHOPIAN AIRWAYS REGISTRATION AND SEED FUNDING
+        await config.flightSuretyApp.registerAirline(ethopianAirways, 'Ethopian airways', {from: config.firstAirline});
+        await config.flightSuretyData.fund({from:ethopianAirways, value: web3.utils.toWei('10', 'ether')});
+        
+        // EMIRATES AIRWAYS REGISTRATION AND SEED FUNDING
+        await config.flightSuretyApp.registerAirline(emiratesAirways, 'Emirates airways', {from: config.firstAirline});
+        await config.flightSuretyData.fund({from:emiratesAirways, value: web3.utils.toWei('10', 'ether')});
+        
+        // TURKISH AIRWAYS REGISTRATION AND SEED FUNDING
+        await config.flightSuretyApp.registerAirline(turkishAirways, 'Turkish airways', {from: config.firstAirline});
+        await config.flightSuretyData.fund({from:turkishAirways, value: web3.utils.toWei('10', 'ether')});
         
     }
     catch(e) {
+        console.log('error',e)
 
     }
-    let result = await config.flightSuretyData.isAirline.call(newAirline); 
+    // Check if airlines have been registered successfully
+    let nigerianAirwaysIsRegistered = await config.flightSuretyData.isAirline.call(nigerianAirways); 
+    let egyptAirwaysIsRegistered = await config.flightSuretyData.isAirline.call(egyptAirways); 
+    let ethopianAirwaysIsRegistered = await config.flightSuretyData.isAirline.call(ethopianAirways); 
+    let emiratesAirwaysIsRegistered = await config.flightSuretyData.isAirline.call(emiratesAirways); 
+    let turkishAirwaysIsRegistered = await config.flightSuretyData.isAirline.call(turkishAirways); 
+
+    console.log(await config.flightSuretyApp.registeredAirlinesCount.call())
+
+    console.log(nigerianAirwaysIsRegistered,ethopianAirwaysIsRegistered,egyptAirwaysIsRegistered,emiratesAirwaysIsRegistered,turkishAirwaysIsRegistered);
+    // console.log(nigerianAirwaysIsRegistered, egyptAirwaysIsRegistered, ethopianAirwaysIsRegistered);
+    let result = nigerianAirwaysIsRegistered && ethopianAirwaysIsRegistered && egyptAirwaysIsRegistered && emiratesAirwaysIsRegistered && turkishAirwaysIsRegistered;
+    // let result = nigerianAirwaysIsRegistered && egyptAirwaysIsRegistered && ethopianAirwaysIsRegistered;
 
     // ASSERT
-    assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding");
+    assert.equal(result, true, "Problem registering airlines");
 
   });
 
 
-  it(`(airline) can pay seed fund only after registration`, async ()=>{
-
-    // ARRANGE
-    let registeredAirline = config.firstAirline;
-
-     // ACT
-    await config.flightSuretyData.fund({from:registeredAirline, value:web3.utils.toWei('10','ether')});
-
-    let result = await config.flightSuretyData.hasPaidSeedFund.call(registeredAirline);
-
-    // ASSERT
-    assert.equal(result, true, "Airline seed fund payment didn't go through");
-
-  })
 
  
 
