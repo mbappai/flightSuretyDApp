@@ -30,7 +30,7 @@ contract FlightSuretyApp {
 
     address private contractOwner;          // Account used to deploy contract
     address private firstAirline;
-    uint registeredAirlinesCount;
+    uint public registeredAirlinesCount;
 
     struct Flight {
         bool isRegistered;
@@ -41,13 +41,10 @@ contract FlightSuretyApp {
     mapping(bytes32 => Flight) private flights;
 
 
-    address[] private _voters = new address[](0);
-    uint constant MULTIPARTY_THRESHOLD = 4;
 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
-    event RegisteredNewAirline(address newAirline);
  
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
@@ -71,11 +68,7 @@ contract FlightSuretyApp {
     /**
     * @dev Modifier that requires the caller of registerAirline to be a registeredAirline.
     */
-    modifier requireIsRegisteredAirline() 
-    {
-        require(flightSuretyData.isAirline(msg.sender), "Sorry, only first airline can register new airlines");  
-        _;  
-    }
+    
 
     /**
     * @dev Modifier that requires the "ContractOwner" account to be the function caller
@@ -84,6 +77,12 @@ contract FlightSuretyApp {
     {
         require(msg.sender == contractOwner, "Caller is not contract owner");
         _;
+    }
+
+    modifier requireIsRegisteredAirline() 
+    {
+        require(flightSuretyData.isAirline(msg.sender), "Sorry, only registered airlines can register new airlines");  
+        _;  
     }
 
     // Modifier to check if number of registered users have reached 4
@@ -102,8 +101,6 @@ contract FlightSuretyApp {
 
         flightSuretyData = IFlightSuretyData(dataContract);
 
-        // Keep track of registered airlines
-        registeredAirlinesCount.add(1);
     }
 
     /********************************************************************************************/
@@ -118,35 +115,6 @@ contract FlightSuretyApp {
         return true;  // Modify to call data contract's status
     }
 
-    function checkDuplicateVotes(address voter) internal view returns (bool){
-        bool isDuplicate = false;
-        for(uint c=0; c<_voters.length; c++) {
-            if (_voters[c] == voter) {
-                isDuplicate = true;
-                return isDuplicate;
-            }
-        }
-        return isDuplicate;
-    }
-
-    function multipartyRegister(address newAirline) internal {
-
-         // Get minimum voters for consensus (50% of registered airlines)
-        uint minimumVoters = registeredAirlinesCount.div(2);
-
-        if (_voters.length >= minimumVoters) {
-            flightSuretyData.registerAirline(newAirline); 
-
-            registeredAirlinesCount.add(1);
-
-            // Reset voters after successfully registering a new airline;
-            _voters = new address[](0);   
-
-            // Emit event when new airline is registered
-            emit RegisteredNewAirline(newAirline);   
-        }
-
-    }
 
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
@@ -157,43 +125,11 @@ contract FlightSuretyApp {
     * @dev Add an airline to the registration queue
     *
     */   
-    function registerAirline ( address newAirline ) public requireIsOperational  requireIsRegisteredAirline returns (bool success, uint256 votes)
-    {
-
-        // Confirm msg.sender (ariline) has paid seedFund before registering new airline
-        require(flightSuretyData.hasPaidSeedFund(msg.sender),"Sorry can't register new airline because you haven't payed seed fund.");
-
-        // Use multiparty consensus if registered airlines reaches 4: 50% vote is required from registered user to approve registering new airline. 
-        if(registeredAirlinesCount >= MULTIPARTY_THRESHOLD){
-
-        // Check for duplicate vote by an airline (msg.sender).
-        bool isDuplicate = checkDuplicateVotes(msg.sender);
-        
-        require(!isDuplicate, "Caller has already called this function.");
-
-        // Add voter (airline) to _voters variable.
-        _voters.push(msg.sender);
-
-        // Emit event to tell front-end the airline that recently voted
-
-
-        // Atleast 50% of registered airlines should vote to register airline
-        multipartyRegister(newAirline);
-
-       
-        }else{
-        // Call registerAirline func from data-contract to register airline.
-        flightSuretyData.registerAirline(newAirline);
-
-        // Keep track of registered airlines by incrementing on each successful registration
-        registeredAirlinesCount.add(1);
-
-        emit RegisteredNewAirline(newAirline);
-        }
-
-
-        return (success, 0);
+    function registerAirline ( address newAirline, string memory _name ) public requireIsOperational requireIsRegisteredAirline {
+        flightSuretyData.registerAirline(newAirline, _name);
     }
+
+
 
 
    /**
@@ -419,9 +355,7 @@ contract FlightSuretyApp {
 }   
 
 interface IFlightSuretyData{
-    function registerAirline(address airline) external;
+    function registerAirline(address airline, string memory name) external;
     function isOperational() external view returns (bool);
     function isAirline(address airline) external view returns (bool);
-    function fund() external payable;
-    function hasPaidSeedFund(address airline) external view returns (bool);
 }

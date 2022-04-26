@@ -16,7 +16,9 @@ contract FlightSuretyData {
     struct airlineInfo{
         bool isRegistered;
         uint256 seedFund;
-        bytes32 name;
+        uint256 votes;
+        string name;
+        
     }
     mapping (address => airlineInfo) airlines;
 
@@ -33,12 +35,19 @@ contract FlightSuretyData {
     mapping (address => insuranceInfo) insuredPassengers;
     uint constant MINIMUM_SEED_FUND = 10 ether;
     mapping(address => bool) private authorizedContracts;
+    uint256 registeredAirlinesCount;
+
+
+    address[] private _voters = new address[](0);
+    uint constant MULTIPARTY_THRESHOLD = 4;
 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
 
-    event HasPayedSeedFund(uint amount);
+    event HasPayedSeedFund(uint amount, string airlineName, address airlineAddress);
+    event RegisteredNewAirline(address newAirline, string name);
+ 
 
     /**
     * @dev Constructor
@@ -52,6 +61,8 @@ contract FlightSuretyData {
         airlines[firstAirline].isRegistered = true;
         airlines[firstAirline].seedFund = 10 ether;
         airlines[firstAirline].name = 'Arik Airways';
+
+        registeredAirlinesCount.add(1);
     }
 
     /********************************************************************************************/
@@ -86,6 +97,8 @@ contract FlightSuretyData {
         _;
     }
 
+    
+
     /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
     /********************************************************************************************/
@@ -103,7 +116,7 @@ contract FlightSuretyData {
         return operational;
     }
 
-    function isAirline(address airline) external view  returns (bool){
+    function isAirline(address airline) public view  returns (bool){
         return airlines[airline].isRegistered;
     }
 
@@ -113,7 +126,7 @@ contract FlightSuretyData {
     *
     * @return A bool if seedFund amount is greater than initial value of 0
     */  
-    function hasPaidSeedFund ( address airline) external view returns (bool){
+    function hasPaidSeedFund ( address airline) internal view returns (bool){
         return airlines[airline].seedFund > 0;
         
     }
@@ -142,6 +155,48 @@ contract FlightSuretyData {
     }
 
 
+    function checkDuplicateVotes(address voter) internal view returns (bool){
+        bool isDuplicate = false;
+        for(uint c=0; c<_voters.length; c++) {
+            if (_voters[c] == voter) {
+                isDuplicate = true;
+                return isDuplicate;
+            }
+        }
+        return isDuplicate;
+    }
+
+    function voteForAirline(address newAirline, string memory _name) internal {
+
+
+        // Increment votes field for airline about to be registered.
+        airlines[newAirline].votes.add(1);
+
+         // Get minimum voters for consensus (50% of registered airlines)
+        uint minimumVotersRequired = registeredAirlinesCount.div(2);
+        uint votesReceived = airlines[newAirline].votes;
+
+        if ( votesReceived == minimumVotersRequired) {
+            airlines[newAirline].isRegistered = true;
+            airlines[newAirline].name = _name;
+
+            registeredAirlinesCount.add(1);
+
+            // Reset voters after successfully registering a new airline;
+            _voters = new address[](0);   
+
+            // Emit event when new airline is registered
+            emit RegisteredNewAirline(newAirline, _name);   
+        }
+
+    }
+
+    function airlineHasReachedConsensus(address airline) external view returns(bool) {
+        uint256 numberOfRequiredVotes = registeredAirlinesCount.div(2); 
+        return airlines[airline].votes >= numberOfRequiredVotes;
+    }
+
+
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
@@ -152,9 +207,48 @@ contract FlightSuretyData {
     *
     */   
     // Function writes to the state hence, remains in the data contract.
-    function registerAirline (address airline) external requireIsAuthorizedCaller {
-       airlines[airline].isRegistered = true;
+    function registerAirline ( address newAirline, string memory _name ) external  returns (bool success, uint256 votes)
+    {
+
+        // Confirm msg.sender (ariline) has paid seedFund before registering new airline
+        require(hasPaidSeedFund(msg.sender),"Sorry can't register new airline because you haven't payed seed fund.");
+
+        // Confirm msg.sender is not trying to register an airline more than once
+        require(!isAirline(newAirline),"Airline trying to register already exist");
+
+
+        // Use multiparty consensus if registered airlines reaches 4: 50% vote is required from registered user to approve registering new airline. 
+        if(registeredAirlinesCount >= MULTIPARTY_THRESHOLD){
+            
+        // Check for duplicate vote by an airline (msg.sender).
+        bool isDuplicate = checkDuplicateVotes(msg.sender);
+        
+        require(!isDuplicate, "Current voter can't cast more than 1 vote.");
+
+        // Emit event to tell front-end the airline that recently voted
+
+
+        // Atleast 50% of registered airlines should vote to register airline
+        voteForAirline(newAirline, _name);
+
+       
+        }else{
+        // Call registerAirline func from data-contract to register airline.
+        airlines[newAirline].isRegistered = true;
+        airlines[newAirline].name = _name;
+
+        // Keep track of registered airlines by incrementing on each successful registration
+        registeredAirlinesCount.add(1);
+
+        emit RegisteredNewAirline(newAirline, _name);
+        }
+
+
+        return (success, 0);
     }
+
+
+    
 
 
    /**
@@ -202,6 +296,9 @@ contract FlightSuretyData {
     */   
     function fund () external payable {
 
+        // Require that an airline needs to be registered before paying seed fund.
+        require(airlines[msg.sender].isRegistered,"Please register before contributing to seed fund");
+
         // Require that an airline doesn't pay for seed funds more than once.
         require(airlines[msg.sender].seedFund == 0,"Thank you, but you can only pay once.");
 
@@ -214,7 +311,7 @@ contract FlightSuretyData {
         airlines[msg.sender].seedFund = msg.value;
 
         // emit event for successful payment
-        emit HasPayedSeedFund(msg.value);
+        emit HasPayedSeedFund(msg.value,airlines[msg.sender].name,msg.sender);
     }
 
     function getFlightKey (
