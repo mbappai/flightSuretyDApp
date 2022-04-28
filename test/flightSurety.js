@@ -134,14 +134,13 @@ contract('Flight Surety Tests', async (accounts) => {
     // ARRANGE
     // Second airline
     let nigerianAirways = accounts[2];
-    // let seedFund = await config.flightSuretyData.MINIMUM_SEED_FUND.call();
     
     // ACT
     try {
         // Fund first airline
         await config.flightSuretyData.fund({from: config.firstAirline, value: web3.utils.toWei('10','ether') });
         // Register second airline after funding
-        await config.flightSuretyApp.registerAirline(nigerianAirways,'Nigerian airways', {from: accounts[3]});
+        await config.flightSuretyApp.registerAirline(nigerianAirways,'Nigerian airways', {from: config.firstAirline});
 
         
     }
@@ -149,8 +148,6 @@ contract('Flight Surety Tests', async (accounts) => {
       console.log(e);
     }
 
-    // // Retrieve seed fund
-    // seedFund = await config.flightSuretyData.getSeedFund.call(config.firstAirline);
 
     let result = await config.flightSuretyData.isAirline.call(nigerianAirways);
     let airlinesCount = await config.flightSuretyData.registeredAirlinesCount.call(); 
@@ -160,6 +157,36 @@ contract('Flight Surety Tests', async (accounts) => {
 
 }); 
     
+  
+it('(airline) cannot be registered more than once', async () => {
+  
+  // ARRANGE
+  // Second airline
+  let egyptAirways = accounts[3];
+  let registrationCount = 0;
+  
+  // ACT
+  try {
+
+      // Attempt to register the same airline twice.
+      await config.flightSuretyApp.registerAirline(egyptAirways,'Egypt airways', {from: config.firstAirline});
+      registrationCount++;
+      await config.flightSuretyApp.registerAirline(egyptAirways,'Egypt airways', {from: config.firstAirline});
+      registrationCount++
+      
+  }
+  catch(e) {
+    console.log(e);
+  }
+
+
+  let airlinesCount = await config.flightSuretyData.registeredAirlinesCount.call(); 
+
+  assert.equal(registrationCount, 1, "An airline cannot be registered more than once");
+  assert.equal(airlinesCount.toNumber(), 3, "3 airlines should now be registered");
+
+}); 
+  
 
   xit(`(airline) registering up to 4 airline shouldn't require multiparty consensus `, async () => {
     
