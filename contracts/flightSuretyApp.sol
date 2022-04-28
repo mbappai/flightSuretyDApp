@@ -30,7 +30,6 @@ contract FlightSuretyApp {
 
     address private contractOwner;          // Account used to deploy contract
     address private firstAirline;
-    uint public registeredAirlinesCount;
 
     struct Flight {
         bool isRegistered;
@@ -79,9 +78,9 @@ contract FlightSuretyApp {
         _;
     }
 
-    modifier requireIsRegisteredAirline() 
+    modifier requireAirlineIsActive() 
     {
-        require(flightSuretyData.isAirline(msg.sender), "Sorry, only registered airlines can register new airlines");  
+        require(flightSuretyData.isAirlineActive(msg.sender), " INACTIVE AIRLINE: Confirm that you have both been registered and have paid the seed fund before attempting registering a new airline.");  
         _;  
     }
 
@@ -125,7 +124,7 @@ contract FlightSuretyApp {
     * @dev Add an airline to the registration queue
     *
     */   
-    function registerAirline ( address newAirline, string memory _name ) public requireIsOperational requireIsRegisteredAirline {
+    function registerAirline ( address newAirline, string memory _name ) public requireIsOperational requireAirlineIsActive {
         flightSuretyData.registerAirline(newAirline, _name);
     }
 
@@ -358,4 +357,5 @@ interface IFlightSuretyData{
     function registerAirline(address airline, string memory name) external;
     function isOperational() external view returns (bool);
     function isAirline(address airline) external view returns (bool);
+    function isAirlineActive(address airline) external view returns (bool);
 }
