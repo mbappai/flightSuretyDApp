@@ -176,7 +176,7 @@ it('(airline) cannot be registered more than once', async () => {
       
   }
   catch(e) {
-    console.log(e);
+    // console.log(e);
   }
 
 
@@ -188,58 +188,116 @@ it('(airline) cannot be registered more than once', async () => {
 }); 
   
 
-  xit(`(airline) registering up to 4 airline shouldn't require multiparty consensus `, async () => {
+  it(`(airline) registering up to 4 airline shouldn't require multiparty consensus `, async () => {
     
     // ARRANGE
     let egyptAirways = accounts[3];
-    // let ethopianAirways = accounts[4];
-    // let emiratesAirways = accounts[5];
-    // let turkishAirways = accounts[6];
+
+    // 4th airline
+    let ethopianAirways = accounts[4];
 
     // ACT
     try {
-        
-        // await config.flightSuretyData.fund({from:config.firstAirline ,value:web3.utils.toWei('10','ether')});
 
         
+        
         // EGYPT AIRWAYS REGISTRATION AND SEED FUNDING
-        await config.flightSuretyApp.registerAirline(egyptAirways, 'Egypt airways', {from: config.firstAirline});
         await config.flightSuretyData.fund({from:egyptAirways, value: web3.utils.toWei('10', 'ether')});
-        
-        //  // ETHOPIAN AIRWAYS REGISTRATION AND SEED FUNDING
-        // await config.flightSuretyApp.registerAirline(ethopianAirways, 'Ethopian airways', {from: config.firstAirline});
-        // await config.flightSuretyData.fund({from:ethopianAirways, value: web3.utils.toWei('10', 'ether')});
-        
-        // // EMIRATES AIRWAYS REGISTRATION AND SEED FUNDING
-        // await config.flightSuretyApp.registerAirline(emiratesAirways, 'Emirates airways', {from: config.firstAirline});
-        // await config.flightSuretyData.fund({from:emiratesAirways, value: web3.utils.toWei('10', 'ether')});
-        
-        // TURKISH AIRWAYS REGISTRATION AND SEED FUNDING
-        // await config.flightSuretyApp.registerAirline(turkishAirways, 'Turkish airways', {from: config.firstAirline});
-        // await config.flightSuretyData.fund({from:turkishAirways, value: web3.utils.toWei('10', 'ether')});
+        await config.flightSuretyApp.registerAirline(ethopianAirways, 'Ethopians Airways', {from: egyptAirways});
         
     }
     catch(e) {
         console.log('error',e)
-
+        
     }
     // Check if airlines have been registered successfully
-    let nigerianAirwaysIsRegistered = await config.flightSuretyData.isAirline.call(nigerianAirways); 
-    let egyptAirwaysIsRegistered = await config.flightSuretyData.isAirline.call(egyptAirways); 
-    // let ethopianAirwaysIsRegistered = await config.flightSuretyData.isAirline.call(ethopianAirways); 
+    let ethopianAirwaysIsRegistered = await config.flightSuretyData.isAirline.call(ethopianAirways); 
     // let emiratesAirwaysIsRegistered = await config.flightSuretyData.isAirline.call(emiratesAirways); 
-    // let turkishAirwaysIsRegistered = await config.flightSuretyData.isAirline.call(turkishAirways); 
+    
 
-
-    console.log(nigerianAirwaysIsRegistered,egyptAirwaysIsRegistered);
-
-    let result = nigerianAirwaysIsRegistered && egyptAirwaysIsRegistered ;
-
+    let numberOfAirlines = await config.flightSuretyData.registeredAirlinesCount.call();
+    
+    
     // ASSERT
-    assert.equal(result, true, "Problem registering airlines");
+    assert.equal(ethopianAirwaysIsRegistered, true, "Problem registering airlines");
     assert.equal(numberOfAirlines, 4, "4 airlines should be registered by now.");
         
 
+  });
+
+  it(`(airline) registering up to 5 airlines without consensus fails`, async () => {
+    
+    // ARRANGE
+    let egyptAirways = accounts[3];
+
+    // 5th airline to register
+    let turkishAirways = accounts[5];
+
+    // ACT
+    try {
+
+        await config.flightSuretyApp.registerAirline(turkishAirways, 'Turkish Airways', {from: egyptAirways});  
+        
+    }
+    catch(e) {
+        console.log('error',e)
+        
+    }
+    // Check if airlines have been registered successfully
+    let turkishAirwaysIsRegistered = await config.flightSuretyData.isAirline.call(turkishAirways); 
+
+    let numberOfAirlines = await config.flightSuretyData.registeredAirlinesCount.call();
+    
+    
+    // ASSERT
+    assert.equal(turkishAirwaysIsRegistered, false, "Problem registering airlines");
+    assert.equal(numberOfAirlines, 4, "4 airlines should still be registered by now.");
+        
+  });
+
+  it(`(airline) registering up to 5 airlines with consensus passes`, async () => {
+    
+    // ARRANGE
+    // first airline --- REGISTERED AND FUNDED > ACTIVE
+    let arikAirways = config.firstAirline;
+    // second airline --- REGISTERED, NOT FUNDED > INACTIVE
+    let nigerianAirways = accounts[2];
+    // third airline  --- REGISTERED AND FUNDED > ACTIVE
+    let egyptAirways = accounts[3];
+    // fourth airline --- REGISTERED, NOT FUNDED > INACTIVE
+    let ethopianAirways = accounts[4];
+    
+    // 5th airline to register --- NOT REGISTERED, NOT FUNDED > INACTIVE
+    let turkishAirways = accounts[5];
+
+    // ACT
+    try {
+
+        // await config.flightSuretyData.fund({from:nigerianAirways, value:web3.utils.toWei('10', 'ether')});
+
+        // Active airlines (arikAirways and egyptAirways) voting to register new airline: turkish airways
+        await config.flightSuretyApp.registerAirline(turkishAirways, 'Turkish Airways', {from: arikAirways});  
+        // await config.flightSuretyApp.registerAirline(turkishAirways, 'Turkish Airways', {from: arikAirways});  
+        await config.flightSuretyApp.registerAirline(turkishAirways, 'Turkish Airways', {from: egyptAirways});  
+ 
+        
+    }
+    catch(e) {
+        console.log(e)
+        
+    }
+    // Check if airlines have been registered successfully
+    let turkishAirwaysIsRegistered = await config.flightSuretyData.isAirline.call(turkishAirways); 
+
+    let numberOfAirlines = await config.flightSuretyData.registeredAirlinesCount.call();
+    let airlinesHasReachedConsensus = await config.flightSuretyData.airlineHasReachedConsensus(turkishAirways);
+     
+    
+    // ASSERT
+    assert.equal(turkishAirwaysIsRegistered, true, "Problem registering airlines.");
+    assert.equal(airlinesHasReachedConsensus, true, "Airlines haven't reached consensus.");
+    assert.equal(numberOfAirlines, 5 , " 5 airlines should be registered after consensus.");
+        
   });
 
 

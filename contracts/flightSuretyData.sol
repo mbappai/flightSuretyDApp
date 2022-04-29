@@ -47,6 +47,7 @@ contract FlightSuretyData {
 
     event HasPayedSeedFund(uint amount, string airlineName, address airlineAddress);
     event RegisteredNewAirline(address newAirline, string name);
+    event CastVote(address voterAddress, string voterName, address voteeAddress, string voteeName );
  
 
     /**
@@ -165,11 +166,11 @@ contract FlightSuretyData {
         return isDuplicate;
     }
 
-    function voteForAirline(address newAirline, string memory _name) internal {
+    function voteForAirline(address newAirline, string memory _name, address voter) internal {
 
 
         // Increment votes field for airline about to be registered.
-        airlines[newAirline].votes.add(1);
+        airlines[newAirline].votes = airlines[newAirline].votes.add(1);
 
          // Get minimum voters for consensus (50% of registered airlines)
         uint minimumVotersRequired = registeredAirlinesCount.div(2);
@@ -187,6 +188,9 @@ contract FlightSuretyData {
             // Emit event when new airline is registered
             emit RegisteredNewAirline(newAirline, _name);   
         }
+
+        // Emit event after every vote showing which airline voted.
+        emit CastVote(voter,airlines[voter].name,newAirline, _name);
 
     }
 
@@ -221,9 +225,6 @@ contract FlightSuretyData {
     function registerAirline ( address newAirline, string memory _name ) external  returns (bool success, uint256 votes)
     {
 
-        // Confirm msg.sender (airline) has paid seedFund before registering new airline
-        // require(hasPaidSeedFund(msg.sender), "ACCOUNT INACTIVE: Pay seed fund to activate acct before registering a new airline.");
-
         // Confirm msg.sender is not trying to register an airline more than once
         require(!isAirline(newAirline), "AIRLINE ALREADY EXIST: Please register a new airline");
 
@@ -234,17 +235,18 @@ contract FlightSuretyData {
         // Check for duplicate vote by an airline (msg.sender).
         bool isDuplicate = checkDuplicateVotes(msg.sender);
         
-        require(!isDuplicate, "Current voter can't cast more than 1 vote.");
+        require(!isDuplicate, "DOUBLE VOTING: Voter is only allowed to cast 1 vote.");
 
         // Emit event to tell front-end the airline that recently voted
 
 
         // Atleast 50% of registered airlines should vote to register airline
-        voteForAirline(newAirline, _name);
+        voteForAirline(newAirline, _name,msg.sender);
 
        
         }else{
-        // Call registerAirline func from data-contract to register airline.
+        
+        // Register airline
         airlines[newAirline].isRegistered = true;
         airlines[newAirline].name = _name;
         airlines[newAirline].votes = airlines[newAirline].votes.add(1);
