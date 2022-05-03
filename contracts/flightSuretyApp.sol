@@ -36,6 +36,7 @@ contract FlightSuretyApp {
         uint8 statusCode;
         uint256 updatedTimestamp;        
         address airline;
+        string flight;
     }
     mapping(bytes32 => Flight) private flights;
 
@@ -135,7 +136,15 @@ contract FlightSuretyApp {
     * @dev Register a future flight for insuring.
     *
     */  
-    function registerFlight ( ) external pure{
+    function registerFlight (uint _timestamp, string memory _flight ) external requireIsOperational requireAirlineIsActive{
+        
+        bytes32 flightKey = getFlightKey(msg.sender, _flight, _timestamp);
+
+        flights[flightKey].flight = _flight;
+        flights[flightKey].airline = msg.sender;
+        flights[flightKey].statusCode = STATUS_CODE_UNKNOWN;
+        flights[flightKey].isRegistered = true;
+        flights[flightKey].updatedTimestamp = _timestamp;
 
     }
     
@@ -149,8 +158,8 @@ contract FlightSuretyApp {
         uint256 timestamp, 
         uint8 statusCode ) internal pure{
 
+        // The status code will determine if a passenger gets paid insurance for the flight
     }
-
 
    
 
