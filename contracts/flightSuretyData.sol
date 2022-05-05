@@ -26,14 +26,19 @@ contract FlightSuretyData {
 
 
     // Insurance data for each passenger
-    struct insuranceInfo{
-        uint256 paidAmount;
+    struct passengerInfo{
+        string name;
+        string airlineName;
         bytes32 flightNo;
+        uint256 insurancePaid;
         uint256 timestamp;
+        uint256 payoutAmount;
     }
 
-    mapping (address => insuranceInfo) insuredPassengers;
+    mapping (address => passengerInfo) passengers;
+
     uint public constant MINIMUM_SEED_FUND = 10 ether;
+    uint public constant MIN_FLIGHT_INSURANCE_PRICE = 1 ether;
     mapping(address => bool) private authorizedContracts;
     uint256 public registeredAirlinesCount;
 
@@ -222,8 +227,7 @@ contract FlightSuretyData {
     *
     */   
     // Function writes to the state hence, remains in the data contract.
-    function registerAirline ( address newAirline, string memory _name ) external  returns (bool success, uint256 votes)
-    {
+    function registerAirline ( address newAirline, string memory _name ) external  returns (bool success, uint256 votes) {
 
         // Confirm msg.sender is not trying to register an airline more than once
         require(!isAirline(newAirline), "AIRLINE ALREADY EXIST: Please register a new airline");
@@ -262,45 +266,36 @@ contract FlightSuretyData {
     }
 
 
-    
-
 
    /**
     * @dev Buy insurance for a flight
     *
     */   
     // F
-    function buy ()
-                            external
-                            payable
-    {
+    function buy ( ) external requireIsOperational payable {
+
         // Passengers may pay up to 1 ether for purchasing flight insurance
-        // MAX_FLIGHT_INSURANCE_PRICE = 1 ether;
+        require(msg.value >= MIN_FLIGHT_INSURANCE_PRICE,"INSUFFICIENT AMOUNT: Minimum price for flight insurance is 1 ether");
+
+        // Pass flightNo and timestamps for the flight
+
 
     }
 
     /**
      *  @dev Credits payouts to insurees
     */
-    function creditInsurees
-                                (
-                                )
-                                external
-                                pure
-    {
+    function creditInsurees ( ) external pure{
+        // If flight is delayed then passenger gets funded
     }
     
 
     /**
      *  @dev Transfers eligible payout funds to insuree
+        This function transfers the funds accumulated for the passenger
      *
     */
-    function pay
-                            (
-                            )
-                            external
-                            pure
-    {
+    function pay( ) external pure {
     }
 
    /**
@@ -311,7 +306,7 @@ contract FlightSuretyData {
     function fund () external payable {
 
         // Require that an airline needs to be registered before paying seed fund.
-        require(airlines[msg.sender].isRegistered,"Please register before contributing to seed fund");
+        require(airlines[msg.sender].isRegistered,"FUNDING BEFORE REGISTRATION: Please ensure airline is registered before paying seed fund");
 
         // Require that an airline doesn't pay for seed funds more than once.
         require(airlines[msg.sender].seedFund == 0,"DOUBLE PAYMENT ATTEMPT: Thank you, but you can only pay once.");
@@ -328,14 +323,6 @@ contract FlightSuretyData {
         emit HasPayedSeedFund(msg.value,airlines[msg.sender].name,msg.sender);
     }
 
-    function getFlightKey (
-        address airline, 
-        string memory flight,
-        uint256 timestamp) pure internal returns(bytes32){
-
-        return keccak256(abi.encodePacked(airline, flight, timestamp));
-
-    }
 
     /**
     * @dev Fallback function for funding smart contract.

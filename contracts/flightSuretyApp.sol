@@ -46,6 +46,8 @@ contract FlightSuretyApp {
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
  
+    event FlightRegistered(bytes32 flightKey, address airline);
+
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
     /********************************************************************************************/
@@ -115,6 +117,13 @@ contract FlightSuretyApp {
         return true;  // Modify to call data contract's status
     }
 
+    function isFlightRegistered(address airline, uint timestamp, string memory flight) public view returns (bool){
+       
+       bytes32 flightKey = getFlightKey(airline, flight, timestamp);
+        return flights[flightKey].isRegistered;
+
+    }
+
 
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
@@ -143,8 +152,10 @@ contract FlightSuretyApp {
         flights[flightKey].flight = _flight;
         flights[flightKey].airline = msg.sender;
         flights[flightKey].statusCode = STATUS_CODE_UNKNOWN;
-        flights[flightKey].isRegistered = true;
         flights[flightKey].updatedTimestamp = _timestamp;
+        flights[flightKey].isRegistered = true;
+
+        emit FlightRegistered(flightKey, msg.sender);
 
     }
     

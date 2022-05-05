@@ -301,6 +301,81 @@ it('(airline) cannot be registered more than once', async () => {
   });
 
 
+  // ------------------------------------------- //
+  // Test related to passengers
+  // ------------------------------------------- //
+
+
+  it(`(airline) cannot register flight if inactive`, async()=>{
+
+    // ARRANGE
+
+    // Unregistered airline
+    let ghanaAirline = accounts[6];
+
+    let flight = {
+        name:'K102321',
+        timestamp: Math.floor(Date.now() / 1000),
+    }
+
+    try{
+
+        // ACT
+        await config.flightSuretyApp.registerFlight(flight.timestamp,flight.name,{from:ghanaAirline});
+    }
+    catch(err){
+        // console.log(err)
+    }
+
+
+    // ASSERT
+    
+    let flightIsRegistered = await config.flightSuretyApp.isFlightRegistered(ghanaAirline, flight.timestamp, flight.name);
+    assert.equal(flightIsRegistered, false,'Inactive airline cannot register flights')
+
+  });
+
+
+  it(`(airline) can register flight if active`, async()=>{
+
+    // ARRANGE
+
+    // Unregistered airline
+    let ghanaAirways = accounts[6];
+
+    //REGISTERED AND FUNDED > ACTIVE
+    let egyptAirways = accounts[3];
+
+    let flight = {
+        name:'K102321',
+        timestamp: Math.floor(Date.now() / 1000),
+    }
+
+    try{
+
+        // ACT
+        // Register second airline after funding
+        await config.flightSuretyApp.registerAirline(ghanaAirways,'Ghana airways', {from: config.firstAirline});
+        await config.flightSuretyApp.registerAirline(ghanaAirways,'Ghana airways', {from: egyptAirways});
+        // await config.flightSuretyApp.registerAirline(ghanaAirways,'Ghana airways', {from: egyptAirways});
+        await config.flightSuretyData.fund({from: ghanaAirways, value: web3.utils.toWei('10','ether') });
+
+        await config.flightSuretyApp.registerFlight(flight.timestamp,flight.name,{from:ghanaAirways});
+    }
+    catch(err){
+        console.log(err)
+    }
+
+
+    // ASSERT
+    
+    let flightIsRegistered = await config.flightSuretyApp.isFlightRegistered(ghanaAirways, flight.timestamp, flight.name);
+    assert.equal(flightIsRegistered, true,'Error encountered while registering flight')
+
+
+  });
+
+
 
  
 
