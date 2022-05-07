@@ -6,11 +6,19 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 contract FlightSuretyData {
     using SafeMath for uint256;
 
+    // TODO: prefix all storage variables with s_
+    // TODO: replace require statements with revert statement
+    // TODO: create custom error messages
+    // TODO: reduce reading frequency from global variables
+    // TODO: make variables constant wherever possible.
+    // TODO: capitalize struct names
+
+
     /********************************************************************************************/
     /*                                       DATA VARIABLES                                     */
     /********************************************************************************************/
     // address private firstAirline;                                       // Account of first airline deployed with contract
-    address private contractOwner;                                      // Account used to deploy contract
+    address private immutable i_contractOwner;                                      // Account used to deploy contract
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
     
     struct airlineInfo{
@@ -26,16 +34,26 @@ contract FlightSuretyData {
 
 
     // Insurance data for each passenger
-    struct passengerInfo{
+    struct Passenger{
+        bool isInsured;
         string name;
-        string airlineName;
-        bytes32 flightNo;
-        uint256 insurancePaid;
-        uint256 timestamp;
-        uint256 payoutAmount;
+        string flight;
+        uint256 credit;
+        uint256 insuranceAmount;
+        bytes32 flightKey;
     }
 
-    mapping (address => passengerInfo) passengers;
+    // Track Insured Flights
+    struct FlightInsurance {
+        bool isInsured;
+        address passenger;   // Passenger that insured flight
+        uint256 insuranceAmount;  // Amount paid by passenger to insure flight
+        bytes32 flightKey;   // Key of the flight that got insured.
+    }
+
+
+    mapping (address => Passenger) private s_passengers;
+    mapping (bytes32 => FlightInsurance) private s_flightInsurances;
 
     uint public constant MINIMUM_SEED_FUND = 10 ether;
     uint public constant MIN_FLIGHT_INSURANCE_PRICE = 1 ether;
@@ -61,7 +79,7 @@ contract FlightSuretyData {
     */
     constructor ( address firstAirline) 
     {
-        contractOwner = msg.sender;
+        i_contractOwner = msg.sender;
 
         // Initialize first airline
         airlines[firstAirline].isRegistered = true;
@@ -94,7 +112,7 @@ contract FlightSuretyData {
     */
     modifier requireContractOwner()
     {
-        require(msg.sender == contractOwner, "Caller is not contract owner");
+        require(msg.sender == i_contractOwner, "Caller is not contract owner");
         _;
     }
     modifier requireIsAuthorizedCaller()
@@ -204,7 +222,6 @@ contract FlightSuretyData {
         return airlines[airline].votes >= numberOfRequiredVotes;
     }
 
-    // TODO: Refactor all error responses to abide by reason solution structure — <reason>: <solution>
 
     function isAirlineActive(address airline) external view returns (bool){
         bool state;
@@ -215,6 +232,14 @@ contract FlightSuretyData {
         state = isRegistered && isFunded;
 
         return state;
+    }
+
+    function getFlightKey (
+         address airline, 
+        string memory flight, 
+        uint256 timestamp
+        ) pure internal returns(bytes32) {
+             return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
 
     /********************************************************************************************/
@@ -272,13 +297,24 @@ contract FlightSuretyData {
     *
     */   
     // F
-    function buy ( ) external requireIsOperational payable {
+    function buy ( string memory _flight, string memory passengerName, address passengerAddress ) external requireIsOperational payable {
+
+        // Passenger cannot buy insurance for the same flight more than once.
+        require(!s_passengers[passengerAddress].isInsured, 'FLIGHT ALREADY INSURED');
+
 
         // Passengers may pay up to 1 ether for purchasing flight insurance
         require(msg.value >= MIN_FLIGHT_INSURANCE_PRICE,"INSUFFICIENT AMOUNT: Minimum price for flight insurance is 1 ether");
 
-        // Pass flightNo and timestamps for the flight
+        // Transfer payment to DAO
+        payable(address(this)).transfer(msg.value);
 
+
+        // Track passenger
+        s_passengers[passengerAddress].flight = _flight;
+        s_passengers[passengerAddress].insuranceAmount = msg.value;
+        s_passengers[passengerAddress].isInsured = true;
+        s_passengers[passengerAddress].name = passengerName;
 
     }
 
