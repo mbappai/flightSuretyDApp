@@ -348,19 +348,19 @@ it('(airline) cannot be registered more than once', async () => {
 
     let flight = {
         name:'K102321',
-        timestamp: Math.floor(Date.now() / 1000),
+        timestamp: config.testTimeStamp,
     }
 
     try{
 
         // ACT
-        // Register second airline after funding
-        await config.flightSuretyApp.registerAirline(ghanaAirways,'Ghana airways', {from: config.firstAirline});
-        await config.flightSuretyApp.registerAirline(ghanaAirways,'Ghana airways', {from: egyptAirways});
+        // // Register second airline after funding
+        // await config.flightSuretyApp.registerAirline(ghanaAirways,'Ghana airways', {from: config.firstAirline});
         // await config.flightSuretyApp.registerAirline(ghanaAirways,'Ghana airways', {from: egyptAirways});
-        await config.flightSuretyData.fund({from: ghanaAirways, value: web3.utils.toWei('10','ether') });
+        // // await config.flightSuretyApp.registerAirline(ghanaAirways,'Ghana airways', {from: egyptAirways});
+        // await config.flightSuretyData.fund({from: ghanaAirways, value: web3.utils.toWei('10','ether') });
 
-        await config.flightSuretyApp.registerFlight(flight.timestamp,flight.name,{from:ghanaAirways});
+        await config.flightSuretyApp.registerFlight(flight.timestamp,flight.name,{from:egyptAirways});
     }
     catch(err){
         console.log(err)
@@ -369,11 +369,74 @@ it('(airline) cannot be registered more than once', async () => {
 
     // ASSERT
     
-    let flightIsRegistered = await config.flightSuretyApp.isFlightRegistered(ghanaAirways, flight.timestamp, flight.name);
+    let flightIsRegistered = await config.flightSuretyApp.isFlightRegistered(egyptAirways, flight.timestamp, flight.name);
     assert.equal(flightIsRegistered, true,'Error encountered while registering flight')
 
 
   });
+
+  it(`(passenger) can buy flight insurance for registered flights`, async ()=>{
+
+    // ARRANGE
+      let egyptAirways = accounts[3];
+
+      let passenger={
+          flight: 'K102321',
+          name: 'Mujahid',
+          passengerAddress : accounts[7],
+          timestamp: config.testTimeStamp,
+          airlineAddress: egyptAirways,
+      }
+
+      try{
+          // ACT
+          await config.flightSuretyApp.buyFlightInsurance(
+                                                passenger.flight, 
+                                                passenger.name, 
+                                                passenger.passengerAddress,
+                                                passenger.timestamp, 
+                                                passenger.airlineAddress,
+                                                {value:web3.utils.toWei('1.5','ether')});
+      }catch(err){
+          console.log(err)
+      }
+
+      let result =  await config.flightSuretyData.isFlightInsured.call(passenger.passengerAddress);
+      assert.equal(result, true, 'Error ecountered while buying insurance');
+
+  })
+  it(`(passenger) cannot buy flight insurance for un-registered flights`, async ()=>{
+
+    // ARRANGE
+      let egyptAirways = accounts[3];
+
+      let passenger={
+          flight: 'K102323',
+          name: 'Mujahid',
+          passengerAddress : accounts[8],
+          timestamp: config.testTimeStamp,
+          airlineAddress: egyptAirways,
+      }
+
+
+      try{
+          // ACT
+          await config.flightSuretyApp.buyFlightInsurance(
+                                                passenger.flight, 
+                                                passenger.name, 
+                                                passenger.passengerAddress,
+                                                passenger.timestamp, 
+                                                passenger.airlineAddress,
+                                                {value:web3.utils.toWei('1.5','ether')});
+        
+      }catch(err){
+        //   console.log(err)
+      }
+
+      let result =  await config.flightSuretyData.isFlightInsured.call(passenger.passengerAddress);
+      assert.equal(result, false, 'Error ecountered while buying insurance');
+
+  })
 
 
 

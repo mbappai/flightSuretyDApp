@@ -145,7 +145,7 @@ contract FlightSuretyApp {
     * @dev Register a future flight for insuring.
     *
     */  
-    function registerFlight (uint _timestamp, string memory _flight ) external requireIsOperational requireAirlineIsActive{
+    function registerFlight (uint _timestamp, string memory _flight ) public requireIsOperational requireAirlineIsActive{
         
         bytes32 flightKey = getFlightKey(msg.sender, _flight, _timestamp);
 
@@ -157,6 +157,21 @@ contract FlightSuretyApp {
 
         emit FlightRegistered(flightKey, msg.sender);
 
+    }
+
+    function buyFlightInsurance 
+        ( 
+        string memory _flight, 
+        string memory passengerName,
+        address passengerAddress,
+        uint256 _timestamp, 
+        address airline 
+        ) public payable requireIsOperational{
+
+        // confirm that flight is registered.
+        require(isFlightRegistered(airline, _timestamp, _flight),'FLIGHT NOT FOUND: You can only buy insurance for registered flights');
+
+        flightSuretyData.buyInsurance(_flight, passengerName, passengerAddress, msg.value);
     }
     
    /**
@@ -312,7 +327,13 @@ contract FlightSuretyApp {
     }
 
 
-    
+    function getFlightKey (
+         address airline, 
+        string memory flight, 
+        uint256 timestamp
+        ) pure internal returns(bytes32) {
+             return keccak256(abi.encodePacked(airline, flight, timestamp));
+    }
 
     // Returns array of three non-duplicating integers from 0-9
     function generateIndexes
@@ -367,4 +388,5 @@ interface IFlightSuretyData{
     function isOperational() external view returns (bool);
     function isAirline(address airline) external view returns (bool);
     function isAirlineActive(address airline) external view returns (bool);
+    function buyInsurance(string memory flight, string memory passengerName, address passengerAddress, uint256 insuranceAmount) external payable;
 }

@@ -71,6 +71,7 @@ contract FlightSuretyData {
     event HasPayedSeedFund(uint amount, string airlineName, address airlineAddress);
     event RegisteredNewAirline(address newAirline, string name);
     event CastVote(address voterAddress, string voterName, address voteeAddress, string voteeName );
+    event FlightInsured(string flight, uint256 insuranceAmount);
  
 
     /**
@@ -242,6 +243,10 @@ contract FlightSuretyData {
              return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
 
+    function isFlightInsured(address passengerAddress) public view returns(bool){
+        return s_passengers[passengerAddress].isInsured;
+    }
+
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
@@ -296,15 +301,15 @@ contract FlightSuretyData {
     * @dev Buy insurance for a flight
     *
     */   
-    // F
-    function buy ( string memory _flight, string memory passengerName, address passengerAddress ) external requireIsOperational payable {
+    // 
+    function buyInsurance ( string memory _flight, string memory passengerName, address passengerAddress, uint256 _insuranceAmount ) external requireIsOperational payable returns(bool) {
 
         // Passenger cannot buy insurance for the same flight more than once.
         require(!s_passengers[passengerAddress].isInsured, 'FLIGHT ALREADY INSURED');
 
 
         // Passengers may pay up to 1 ether for purchasing flight insurance
-        require(msg.value >= MIN_FLIGHT_INSURANCE_PRICE,"INSUFFICIENT AMOUNT: Minimum price for flight insurance is 1 ether");
+        require(_insuranceAmount >= MIN_FLIGHT_INSURANCE_PRICE,"INSUFFICIENT AMOUNT: Minimum price for flight insurance is 1 ether");
 
         // Transfer payment to DAO
         payable(address(this)).transfer(msg.value);
@@ -312,9 +317,13 @@ contract FlightSuretyData {
 
         // Track passenger
         s_passengers[passengerAddress].flight = _flight;
-        s_passengers[passengerAddress].insuranceAmount = msg.value;
+        s_passengers[passengerAddress].insuranceAmount = _insuranceAmount;
         s_passengers[passengerAddress].isInsured = true;
         s_passengers[passengerAddress].name = passengerName;
+
+        emit FlightInsured(_flight, _insuranceAmount);
+
+        return true;
 
     }
 
