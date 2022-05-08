@@ -28,6 +28,10 @@ contract FlightSuretyApp {
     uint8 private constant STATUS_CODE_LATE_TECHNICAL = 40;
     uint8 private constant STATUS_CODE_LATE_OTHER = 50;
 
+
+    // Credit value
+    uint8 private constant PASSENGER_CREDIT_VALUE = 150;
+
     address private contractOwner;          // Account used to deploy contract
     address private firstAirline;
 
@@ -38,7 +42,7 @@ contract FlightSuretyApp {
         address airline;
         string flight;
     }
-    mapping(bytes32 => Flight) private flights;
+    mapping(bytes32 => Flight) private s_flights;
 
 
 
@@ -120,7 +124,7 @@ contract FlightSuretyApp {
     function isFlightRegistered(address airline, uint timestamp, string memory flight) public view returns (bool){
        
        bytes32 flightKey = getFlightKey(airline, flight, timestamp);
-        return flights[flightKey].isRegistered;
+        return s_flights[flightKey].isRegistered;
 
     }
 
@@ -149,11 +153,13 @@ contract FlightSuretyApp {
         
         bytes32 flightKey = getFlightKey(msg.sender, _flight, _timestamp);
 
-        flights[flightKey].flight = _flight;
-        flights[flightKey].airline = msg.sender;
-        flights[flightKey].statusCode = STATUS_CODE_UNKNOWN;
-        flights[flightKey].updatedTimestamp = _timestamp;
-        flights[flightKey].isRegistered = true;
+        // TODO: WRITE TO FLIGHTS STORAGE ONLY ONCE
+
+        s_flights[flightKey].flight = _flight;
+        s_flights[flightKey].airline = msg.sender;
+        s_flights[flightKey].statusCode = STATUS_CODE_UNKNOWN;
+        s_flights[flightKey].updatedTimestamp = _timestamp;
+        s_flights[flightKey].isRegistered = true;
 
         emit FlightRegistered(flightKey, msg.sender);
 
@@ -169,7 +175,7 @@ contract FlightSuretyApp {
         ) public payable requireIsOperational{
 
         // confirm that flight is registered.
-        require(isFlightRegistered(airline, _timestamp, _flight),'FLIGHT NOT FOUND: You can only buy insurance for registered flights');
+        require(isFlightRegistered(airline, _timestamp, _flight),'FLIGHT NOT FOUND: You can only buy insurance for registered s_flights');
 
         flightSuretyData.buyInsurance(_flight, passengerName, passengerAddress, msg.value);
     }
@@ -182,9 +188,37 @@ contract FlightSuretyApp {
         address airline, 
         string memory flight, 
         uint256 timestamp, 
-        uint8 statusCode ) internal pure{
+        uint8 statusCode ) internal {
 
-        // The status code will determine if a passenger gets paid insurance for the flight
+            //generate flightKey
+            bytes32 flightKey = getFlightKey(airline, flight, timestamp);
+
+            // update flight status code
+            s_flights[flightKey].statusCode = statusCode;
+
+            // When flight is delayed credit passengers with insurance 
+          if (statusCode == STATUS_CODE_LATE_AIRLINE) {
+            flightSuretyData.creditInsuree(flight, PASSENGER_CREDIT_VALUE);
+          }
+
+            emit FlightStatusInfo(airline, flight, timestamp, statusCode);
+
+    }
+    }
+
+    // Get the current flight status
+    function getFlightStatus
+                            (
+                                address airline,
+                                string memory flight,                        
+                                uint256 timestamp     
+                            )
+                            public
+                            view
+                            returns(uint8)
+    {
+        bytes32 flightKey = getFlightKey(airline, flight, timestamp);
+        return flights[flightKey].statusCode;
     }
 
    
@@ -312,6 +346,8 @@ contract FlightSuretyApp {
 
             emit FlightStatusInfo(airline, flight, timestamp, statusCode);
 
+            // TODO: CLOSE response acceptance for request
+
             // Handle flight status as appropriate
             processFlightStatus(airline, flight, timestamp, statusCode);
         }
@@ -381,4 +417,5 @@ interface IFlightSuretyData{
     function isAirline(address airline) external view returns (bool);
     function isAirlineActive(address airline) external view returns (bool);
     function buyInsurance(string memory flight, string memory passengerName, address passengerAddress, uint256 insuranceAmount) external payable;
+    function creditInsuree(address passengerAddress, uint256 creditAmount) external
 }

@@ -325,6 +325,9 @@ contract FlightSuretyData {
             credit: 0
         });
 
+        // track flight insurance
+        
+
         emit FlightInsured(_flight, _insuranceAmount);
 
         return true;
@@ -334,23 +337,23 @@ contract FlightSuretyData {
     /**
      *  @dev Credits payouts to insurees
     */
-    // function creditInsurees ( address passengerAddress, uint256 creditAmount) external {
+    function creditInsuree ( address passengerAddress, uint256 creditAmount) external {
 
-    //     // make copy of passenger from storage - reduce access frequency of global state var saves gas.
-    //     Passenger memory m_passenger = s_passengers[passengerAddress];
+        // make copy of passenger from storage - reduce access frequency of global state var saves gas.
+        Passenger memory m_passenger = s_passengers[passengerAddress];
 
-    //     uint256 insuranceAmount = m_passenger.insuranceAmount;
-    //     // Update credit balance
+        uint256 insuranceAmount = m_passenger.insuranceAmount;
+        // Update credit balance
         
-    //      // Credit passenger with insurance payout 
-    //      uint256 insuranceAmountBenefit = insuranceAmount.mul(creditAmount).div(100);
-    //      uint256 currentCredit = m_passenger.credit;
-    //      m_passenger.credit = currentCredit + insuranceAmountBenefit;
+         // Credit passenger with insurance payout 
+         uint256 insuranceAmountBenefit = insuranceAmount.mul(creditAmount).div(100);
+         uint256 currentCredit = m_passenger.credit;
+         m_passenger.credit = currentCredit + insuranceAmountBenefit;
 
-    //      // update global state 
-    //      s_passengers[passengerAddress].credit = m_passenger.credit;
+         // update global state 
+         s_passengers[passengerAddress].credit = m_passenger.credit;
 
-    // }
+    }
     
 
     /**
