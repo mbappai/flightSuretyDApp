@@ -192,7 +192,7 @@ contract FlightSuretyApp {
 // region ORACLE MANAGEMENT
 
     // Incremented to add pseudo-randomness at various points
-    uint8 private nonce = 0;    
+    uint256 private nonce = 0;    
 
     // Fee to be paid when registering oracle
     uint256 public constant REGISTRATION_FEE = 1 ether;
@@ -237,15 +237,11 @@ contract FlightSuretyApp {
 
 
     // Register an oracle with the contract
-    function registerOracle
-                            (
-                            )
-                            external
-                            payable
-    {
+    function registerOracle ( ) external payable{
         // Require registration fee
         require(msg.value >= REGISTRATION_FEE, "Registration fee is required");
 
+        // uint8[3] memory indexes = [5,6,8];
         uint8[3] memory indexes = generateIndexes(msg.sender);
 
         oracles[msg.sender] = Oracle({
@@ -255,8 +251,7 @@ contract FlightSuretyApp {
     }
 
      // Generate a request for oracles to fetch flight information
-    function fetchFlightStatus
-                        (
+    function fetchFlightStatus (
                             address airline,
                             string memory flight,
                             uint256 timestamp                            
@@ -267,22 +262,18 @@ contract FlightSuretyApp {
     
 
         // Generate a unique key for storing the request
-        // bytes32 key = keccak256(abi.encodePacked(index, airline, flight, timestamp));
-        // oracleResponses[key] = ResponseInfo({
-        //                                         requester: msg.sender,
-        //                                         isOpen: true
-        //                                     });
+        bytes32 key = keccak256(abi.encodePacked(index, airline, flight, timestamp));
+
+        ResponseInfo storage s_response = oracleResponses[key];
+
+        s_response.requester = msg.sender;
+        s_response.isOpen = true;
 
         emit OracleRequest(index, airline, flight, timestamp);
     } 
 
 
-    function getMyIndexes
-                            (
-                            )
-                            view
-                            external
-                            returns(uint8[3] memory)
+    function getMyIndexes ( ) view external returns(uint8[3] memory)
     {
         require(oracles[msg.sender].isRegistered, "Not registered as an oracle");
 
@@ -371,6 +362,7 @@ contract FlightSuretyApp {
 
         // Pseudo random number...the incrementing nonce adds variation
         uint8 random = uint8(uint256(keccak256(abi.encodePacked(blockhash(block.number - nonce++), account))) % maxValue);
+        // uint8 random = uint8(uint256(keccak256(abi.encodePacked(blockhash(block.number.sub(nonce.add(1))), account))).mod(maxValue));
 
         if (nonce > 250) {
             nonce = 0;  // Can only fetch blockhashes for last 256 blocks so we adapt
