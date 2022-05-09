@@ -33,24 +33,22 @@ contract FlightSuretyData {
     // variable to store insurancePayouts address => uint256;
 
 
-    // Insurance data for each passenger
-    struct Passenger{
-        bool isInsured;
+    // Track Passengers Insurance 
+    struct Passenger {
+        address passengersAddress;
         string name;
-        string flight;
         uint256 credit;
-        uint256 insuranceAmount;
-        address self;
     }
 
     // Track Insured Flights
     struct FlightInsurance {
-        bool isInsured;
-        address passenger;   // Passenger that insured flight
-        uint256 insuranceAmount;  // Amount paid by passenger to insure flight
-        bytes32 flightKey;   // Key of the flight that got insured.
+        address passenger;
+        uint256 insuranceAmount;
+        bytes32 flightKey; 
     }
 
+    // Used to Map Flights to Passengers with Insurance 
+    bytes32[] public flightToPassengersKeys;
 
     mapping (address => Passenger) private s_passengers;
     mapping (bytes32 => FlightInsurance) private s_flightInsurances;
@@ -243,9 +241,9 @@ contract FlightSuretyData {
              return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
 
-    function isFlightInsured(address passengerAddress) public view returns(bool){
-        return s_passengers[passengerAddress].isInsured;
-    }
+    // function isFlightInsured(address passengerAddress) public view returns(bool){
+    //     return s_passengers[passengerAddress].isInsured;
+    // }
 
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
@@ -305,7 +303,6 @@ contract FlightSuretyData {
     function buyInsurance ( string memory _flight, string memory passengerName, address passengerAddress, uint256 _insuranceAmount ) external requireIsOperational payable returns(bool) {
 
         // Passenger cannot buy insurance for the same flight more than once.
-        require(!s_passengers[passengerAddress].isInsured, 'FLIGHT ALREADY INSURED');
 
 
         // Passengers may pay up to 1 ether for purchasing flight insurance
@@ -315,44 +312,62 @@ contract FlightSuretyData {
         payable(address(this)).transfer(msg.value);
 
 
-        // Track passenger
-        s_passengers[passengerAddress] = Passenger({
-            flight: _flight,
-            isInsured: true,
-            insuranceAmount: _insuranceAmount,
-            name: passengerName,
-            self: passengerAddress,
-            credit: 0
-        });
+        // Setup Passenger - Use Later to credit them
+        s_passengers[passengerAddress].passengersAddress = passengerAddress;
+        s_passengers[passengerAddress].name = passengerName;
 
-        // track flight insurance
-        
+        // Setup Flight Insurance Mapping to Passenger
+        bytes32 key = keccak256(abi.encodePacked(passengerAddress, _flight));
+        bytes32 flightKey = keccak256(abi.encodePacked(_flight));
 
-        emit FlightInsured(_flight, _insuranceAmount);
+        s_flightInsurances[key].passenger = passengerAddress;
+        s_flightInsurances[key].flightKey = flightKey;
+        s_flightInsurances[key].insuranceAmount = _insuranceAmount;
 
-        return true;
+        // Checks array to see if hashed value of passengerAddress and flight exist.
+        bool keyFound = false;
+        for (uint i; i < flightToPassengersKeys.length; i++) {
+            if (flightToPassengersKeys[i] == key) {
+                keyFound = true;
+                break;
+            }
+        }
 
+        // If the key is not found, then it must be a new key, hence, pushed into the array.
+        if (keyFound == false) {
+            flightToPassengersKeys.push(key);
+        }
+
+        return(true);
     }
 
     /**
      *  @dev Credits payouts to insurees
     */
-    function creditInsuree ( address passengerAddress, uint256 creditAmount) external {
+    function creditInsuree ( string memory _flight, uint256 creditAmount) external {
 
-        // make copy of passenger from storage - reduce access frequency of global state var saves gas.
-        Passenger memory m_passenger = s_passengers[passengerAddress];
 
-        uint256 insuranceAmount = m_passenger.insuranceAmount;
-        // Update credit balance
-        
-         // Credit passenger with insurance payout 
-         uint256 insuranceAmountBenefit = insuranceAmount.mul(creditAmount).div(100);
-         uint256 currentCredit = m_passenger.credit;
-         m_passenger.credit = currentCredit + insuranceAmountBenefit;
+        // has the flight
+        bytes32 flightKey = keccak256(abi.encodePacked(_flight));
 
-         // update global state 
-         s_passengers[passengerAddress].credit = m_passenger.credit;
+        // var for storing array items of flightToPassengersKeys (hashed values of passengerAddress and flight)
+        bytes32 key;
 
+        for (uint i; i < flightToPassengersKeys.length; i++) {
+
+            key = flightToPassengersKeys[i];
+
+
+            if (s_flightInsurances[key].flightKey == flightKey) {
+                address passengerAddress = s_flightInsurances[key].passenger;
+                uint256 insuranceAmount = s_flightInsurances[key].insuranceAmount;
+
+                // Credit passenger with insurance payout 
+                uint256 insuranceAmountBenefit =insuranceAmount.mul(creditAmount).div(100);
+                uint256 currentCredit = s_passengers[passengerAddress].credit;
+                s_passengers[passengerAddress].credit = currentCredit + insuranceAmountBenefit;
+            }
+        }
     }
     
 

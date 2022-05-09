@@ -165,8 +165,7 @@ contract FlightSuretyApp {
 
     }
 
-    function buyFlightInsurance 
-        ( 
+    function buyFlightInsurance ( 
         string memory _flight, 
         string memory passengerName,
         address passengerAddress,
@@ -204,11 +203,10 @@ contract FlightSuretyApp {
             emit FlightStatusInfo(airline, flight, timestamp, statusCode);
 
     }
-    }
+    
 
     // Get the current flight status
-    function getFlightStatus
-                            (
+    function getFlightStatus (
                                 address airline,
                                 string memory flight,                        
                                 uint256 timestamp     
@@ -218,7 +216,7 @@ contract FlightSuretyApp {
                             returns(uint8)
     {
         bytes32 flightKey = getFlightKey(airline, flight, timestamp);
-        return flights[flightKey].statusCode;
+        return s_flights[flightKey].statusCode;
     }
 
    
@@ -417,5 +415,5 @@ interface IFlightSuretyData{
     function isAirline(address airline) external view returns (bool);
     function isAirlineActive(address airline) external view returns (bool);
     function buyInsurance(string memory flight, string memory passengerName, address passengerAddress, uint256 insuranceAmount) external payable;
-    function creditInsuree(address passengerAddress, uint256 creditAmount) external
+    function creditInsuree(string memory flight, uint256 creditAmount) external;
 }
