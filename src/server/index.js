@@ -2,7 +2,7 @@
 const http = require('http')
 const App = require('./server')
 const app = App.app;
-const registerOracles = App.registerOracles;
+const init = App.init;
 
 
 const server = http.createServer(app)
@@ -20,5 +20,5 @@ if (module.hot) {
 server.listen(port, () => {
     console.log(`Server running at port ${port}`)
     // Check if oracles are already persisted in memory.
-    registerOracles();
+    init();
   })

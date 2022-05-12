@@ -2,11 +2,11 @@ const FlightSuretyApp = require('../../build/contracts/FlightSuretyApp.json');
 const Config = require('./config.json');
 const Web3 = require('web3');
 const express =  require('express');
+const fs = require('fs');
 
 
 let config = Config['localhost'];
 let web3 = new Web3(new Web3.providers.WebsocketProvider(config.url.replace('http', 'ws')));
-web3.eth.defaultAccount = web3.eth.accounts[0];
 let flightSuretyApp = new web3.eth.Contract(FlightSuretyApp.abi, config.appAddress);
 
 const STATUS_CODE_UNKNOWN = 0;
@@ -43,45 +43,77 @@ class Oracle{
     
 }
 
-let oracles = [];
-const accounts = [];
+let registeredOracles = [];
 
 flightSuretyApp.events.OracleRequest({
     fromBlock: 0
-  }, function (error, event) {
+}, function (error, event) {
     if (error) console.log(error)
     console.log(event)
     // get index of request.
-    let requestIndex = 4 // change it to actual index
-
+    let requestIndex = event.returnValues.index; // change it to actual index
+    
     // find oracles that contains index of the request - loop through oracles objects and check their indexes.
-    oracles.forEach(oracle=>{
-       if(oracle.oracleIndexes.contains(requestIndex)){
-
-           // let assigned oracle fetch data and invoke callback from contract once complete.
-           await oracle.fetchFlightStatus();
-       }
+    registeredOracles.forEach(async(oracle)=>{
+        if(oracle.oracleIndexes.contains(requestIndex)){
+            
+            // let assigned oracle fetch data and invoke callback from contract once complete.
+            await oracle.fetchFlightStatus();
+        }
     })
 });
 
-function registerOracles(){
+function init(){
+ // fetch oracles from memory
+ fs.readFile('oracleData.json',(err, data)=>{
+    if(data){
+        // hydrate oracles array if present in memory
+        registeredOracles = JSON.parse(data);
+    }else{
+        registerOracles();
+    }
+});
 
-    // check if oracles have been persisted in memory
-    // if yes, then hydrate the oracles array and break
-    // if no, then register oracles
+
+}
+
+function persistOracles(oracleData){
+
+    const data = JSON.stringify(oracleData);
+    fs.write('oracleData.json',data,function(err,data){
+        if(err) {
+            console.log('Error when persisting file',err);
+            return;
+        }else{
+            console.log("File written successfully!\n");
+        }
+    })
+
+}
+
+async function registerOracles(){
     
-    let registrationFee = web3.utils.toWei('1','ether');
+    // fetch accounts created by ganache
+    const accounts = await web3.eth.getAccounts();
+    web3.eth.defaultAccount = accounts[0];
+
+
+    let registrationFee = web3.utils.toWei('1.5','ether');
     // loop over oracles accounts and register each one.
     for (const account of accounts){
-       await flightSuretyApp.registerOracle({from:account, value:registrationFee});
-       let indexes = await flightSuretyApp.getMyIndexes({from:account});
+       await flightSuretyApp.methods.registerOracle().send({from:account, value:registrationFee, gas:3000000});
+       let indexes = await flightSuretyApp.methods.getMyIndexes().call({from:account});
+
+       console.log(indexes)
 
         // instantiate new oracle objects with address and it's assigned indexes by the contract as constructor params.
        let oracleObject = new Oracle(account,indexes);
-       oracles.push(oracleObject);
+       registeredOracles.push(oracleObject);
+       console.log(registeredOracles)
     }
 
     // persist oracles in memory.
+    persistOracles(registeredOracles);
     
 }
 
@@ -96,6 +128,6 @@ app.get('/api', (req, res) => {
 })
 
 exports.app = app;
-exports.registerOracles = registerOracles;
+exports.init = init;
 
 
