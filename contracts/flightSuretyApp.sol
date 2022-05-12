@@ -219,6 +219,18 @@ contract FlightSuretyApp {
         return s_flights[flightKey].statusCode;
     }
 
+    function withdrawCredit() public requireIsOperational{
+         // verify it's be en called from an externally owned account - msg.sender == tx.origin
+        require(msg.sender == tx.origin,'WRONG CALLER: Only EOA can call this function');
+
+        
+        // transfer funds to passenger account.
+        uint256 creditToPay = flightSuretyData.pay(msg.sender);
+
+        payable(msg.sender).transfer(creditToPay);
+ 
+    }
+
    
 
 // region ORACLE MANAGEMENT
@@ -361,12 +373,7 @@ contract FlightSuretyApp {
     }
 
     // Returns array of three non-duplicating integers from 0-9
-    function generateIndexes
-                            (                       
-                                address account         
-                            )
-                            internal
-                            returns(uint8[3] memory)
+    function generateIndexes (address account) internal returns(uint8[3] memory)
     {
         uint8[3] memory indexes;
         indexes[0] = getRandomIndex(account);
@@ -416,4 +423,7 @@ interface IFlightSuretyData{
     function isAirlineActive(address airline) external view returns (bool);
     function buyInsurance(string memory flight, string memory passengerName, address passengerAddress, uint256 insuranceAmount) external payable;
     function creditInsuree(string memory flight, uint256 creditAmount) external;
+    function getPassengerCredit(address passengerAddress) external view returns(uint256);
+    function clearPassengerCredit(address passengerAddress) external;
+    function pay(address passengerAddress) external returns(uint256);
 }

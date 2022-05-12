@@ -12,6 +12,9 @@ contract FlightSuretyData {
     // TODO: reduce reading frequency from global variables
     // TODO: make variables constant wherever possible.
     // TODO: capitalize struct names
+    // TODO: implement re-entrancy guard
+    // TODO: implement rate-limiting guard
+    // TODO: go over security best practices.
 
 
     /********************************************************************************************/
@@ -241,9 +244,13 @@ contract FlightSuretyData {
              return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
 
-    // function isFlightInsured(address passengerAddress) public view returns(bool){
-    //     return s_passengers[passengerAddress].isInsured;
-    // }
+    function getPassengerCredit(address passengerAddress) external view returns(uint256){
+        return s_passengers[passengerAddress].credit;
+    }
+
+    function clearPassengerCredit(address passengerAddress) external {
+        s_passengers[passengerAddress].credit = 0;
+    }
 
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
@@ -376,7 +383,18 @@ contract FlightSuretyData {
         This function transfers the funds accumulated for the passenger
      *
     */
-    function pay( ) external pure {
+    function pay(address passengerAddress) external requireIsOperational requireIsAuthorizedCaller returns(uint256){
+
+        // fetch payout amount - passengers.credit
+        uint256 currentCredit = s_passengers[passengerAddress].credit;
+
+        // require that credit amount is greater than 0
+        require(currentCredit > 0, 'INSUFFICIENT CREDIT AMOUNT: You dont have sufficeint credit to withdraw');
+
+        // deduct amount to be payed out from the credit balance first
+        s_passengers[passengerAddress].credit = 0;
+
+        return currentCredit;
     }
 
    /**

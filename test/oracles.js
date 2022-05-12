@@ -25,14 +25,16 @@ const STATUS_CODE_LATE_OTHER = 50;
 it('can register oracles', async () => {
 
 // ARRANGE
-let fee = web3.utils.toWei('1','ether');
+let fee = web3.utils.toWei('1.2','ether');
 
 // ACT
 try{
 
-    for(let a=1; a<TEST_ORACLES_COUNT; a++) {      
-        await config.flightSuretyApp.registerOracle({ from: accounts[a], value: fee });
+    for(let a=1; a<TEST_ORACLES_COUNT; a++) {    
+      
+        await config.flightSuretyApp.registerOracle({ from: accounts[a], value: fee, });
         let result = await config.flightSuretyApp.getMyIndexes.call({from: accounts[a]});
+        // console.log('account',accounts[a]);
         console.log(`Oracle Registered: ${result[0]}, ${result[1]}, ${result[2]}`);
     }
 }catch(err){
@@ -45,9 +47,10 @@ xit('can request flight status', async () => {
 // ARRANGE
 let flight = 'ND1309'; // Course number
 let timestamp = config.testTimeStamp;
+let passenger = accounts[6];
 
 // Submit a request for oracles to get status information for a flight
-await config.flightSuretyApp.fetchFlightStatus(config.firstAirline, flight, timestamp);
+await config.flightSuretyApp.fetchFlightStatus(config.firstAirline, flight, timestamp,{from:passenger});
 // ACT
 
 // Since the Index assigned to each test account is opaque by design
