@@ -37,8 +37,17 @@ class Oracle{
     }
 
     // gets fired if oracle request matches one of it's indexes.
-    async fetchFlightStatus(){
+    async fetchFlightStatus(index,airline,flight,timestamp){
         // invoke call back function from contract once complete.
+        // generate random flight status code.
+        const statusCode = generateRandomStatusCode();
+
+        flightSuretyApp.methods.submitOracleResponse(
+            index,
+            airline,
+            flight,
+            timestamp,
+            statusCode )
     }
     
 }
@@ -50,35 +59,25 @@ flightSuretyApp.events.OracleRequest({
 }, function (error, event) {
     if (error) console.log(error)
     console.log(event)
-    // get index of request.
-    let requestIndex = event.returnValues.index; // change it to actual index
-    
+    // get request parms.
+    let {index,airline,flight,timestamp} = event.returnValues;
+
     // find oracles that contains index of the request - loop through oracles objects and check their indexes.
     registeredOracles.forEach(async(oracle)=>{
-        if(oracle.oracleIndexes.contains(requestIndex)){
+        if(oracle.oracleIndexes.contains(index)){
             
             // let assigned oracle fetch data and invoke callback from contract once complete.
-            await oracle.fetchFlightStatus();
+            await oracle.fetchFlightStatus(
+                index,
+                airline,
+                flight,
+                timestamp
+            );
         }
     })
 });
 
-function init(){
- // fetch oracles from memory
- fs.readFile('./oracleData.json',(err, data)=>{
-    if(data){
-        console.log('Hydrating oracles objects from storage ...')
-        console.log('oracle data',data)
-        // hydrate oracles array if present in memory
-        registeredOracles = JSON.parse(data);
-    }else{
-        console.log('Registering oracles ...')
-        registerOracles();
-    }
-});
 
-
-}
 
 function persistOracles(oracleData){
 
@@ -119,6 +118,27 @@ async function registerOracles(){
     persistOracles(registeredOracles);
     
 }
+
+function generateRandomStatusCode(){
+    let randomnumber = Math.floor(Math.random() * (STATUS_CODES.length - 0 + 1)) + 0;
+    return STATUS_CODES[randomnumber];
+}
+
+function init(){
+    // fetch oracles from memory
+    fs.readFile('./oracleData.json',(err, data)=>{
+       if(data){
+           console.log('Hydrating oracles objects from storage ...')
+           // hydrate oracles array if present in memory
+           registeredOracles = JSON.parse(data);
+       }else{
+           console.log('Registering oracles ...')
+           registerOracles();
+       }
+   });
+   
+   
+   }
 
 // declare random status code generator.
 
