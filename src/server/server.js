@@ -65,11 +65,14 @@ flightSuretyApp.events.OracleRequest({
 
 function init(){
  // fetch oracles from memory
- fs.readFile('oracleData.json',(err, data)=>{
+ fs.readFile('./oracleData.json',(err, data)=>{
     if(data){
+        console.log('Hydrating oracles objects from storage ...')
+        console.log('oracle data',data)
         // hydrate oracles array if present in memory
         registeredOracles = JSON.parse(data);
     }else{
+        console.log('Registering oracles ...')
         registerOracles();
     }
 });
@@ -80,7 +83,7 @@ function init(){
 function persistOracles(oracleData){
 
     const data = JSON.stringify(oracleData);
-    fs.write('oracleData.json',data,function(err,data){
+    fs.writeFile('./oracleData.json',data,function(err,data){
         if(err) {
             console.log('Error when persisting file',err);
             return;
@@ -101,10 +104,10 @@ async function registerOracles(){
     let registrationFee = web3.utils.toWei('1.5','ether');
     // loop over oracles accounts and register each one.
     for (const account of accounts){
-       await flightSuretyApp.methods.registerOracle().send({from:account, value:registrationFee, gas:3000000});
+       await flightSuretyApp.methods.registerOracle().send({from:account, value:registrationFee, gas:6000000});
        let indexes = await flightSuretyApp.methods.getMyIndexes().call({from:account});
 
-       console.log(indexes)
+    //    console.log(indexes)
 
         // instantiate new oracle objects with address and it's assigned indexes by the contract as constructor params.
        let oracleObject = new Oracle(account,indexes);
