@@ -35,7 +35,7 @@ const App = () => {
   const [airlines, setAirlines] = useState([])
   const [flights, setFlights] = useState([])
 
-  const [operationStatus, setOperationStatus] = useState(false);
+  const [operationalStatus, setOperationalStatus] = useState(false);
 
   const setupPassengers = (accounts) =>{
     
@@ -93,49 +93,28 @@ const App = () => {
 
   }
 
-  // register contract here
-  // fetch account from ganache
-  const connectWalletHandler = async()=>{
-    const {ethereum} = window;
-    if(!ethereum){
-      notification['warning']({
-        message:'Install metamask',
-        description:'Please make sure you have metamask installed before you continue'
-      })
-    }
-
-    try{
-      const accounts = await ethereum.request({method:'eth_requestAccounts'});
-      message.success('Account connected');
-    } catch(err){
-
-    }
-    
+  const fetchOperationalStatus = async()=>{
+   let operationalStatus = await flightSuretyApp.methods.isOperational().call();
+   setOperationalStatus(operationalStatus);
   }
+
 
   useEffect(() => {
     console.log('Initializing contract ...')
     connectToContract()
+    fetchOperationalStatus()
     return () => {
     };
   }, [])
   
 
-  return (
-    <DrizzleContext.Provider drizzle={drizzle}>
-      <DrizzleContext.Consumer>
-        {drizzleContext => {
-          // const { drizzle, drizzleState, initialized } = drizzleContext;
-
-          // if (!initialized) {
-          //   return "Loading..."
-          // }
-
           return (
             // <MyComponent drizzle={drizzle} drizzleState={drizzleState} />
             <div className="layout">
               <Title>Flyora</Title>
-              <OperationStatus/>
+              <OperationStatus
+                status = {operationalStatus}
+              />
 
               <FlightForm
                title={'Insurance'}
@@ -151,10 +130,7 @@ const App = () => {
               <FlightReport/>
             </div>
           )
-        }}
-      </DrizzleContext.Consumer>
-    </DrizzleContext.Provider>
-  );
-}
+          }
+
 
 export default App;
