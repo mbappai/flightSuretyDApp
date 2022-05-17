@@ -42,12 +42,13 @@ try{
 }
 });
 
-xit('can request flight status', async () => {
+it('can request flight status', async () => {
 
 // ARRANGE
 let flight = 'ND1309'; // Course number
 let timestamp = config.testTimeStamp;
 let passenger = accounts[6];
+let requestIndex = 8;
 
 // Submit a request for oracles to get status information for a flight
 await config.flightSuretyApp.fetchFlightStatus(config.firstAirline, flight, timestamp,{from:passenger});
@@ -61,6 +62,9 @@ for(let a=1; a<TEST_ORACLES_COUNT; a++) {
 
   // Get oracle information
   let oracleIndexes = await config.flightSuretyApp.getMyIndexes.call({ from: accounts[a]});
+
+ // Check if target oracle has the requestIndex amongst one of it's indexes.
+  
   for(let idx=0;idx<3;idx++) {
 
     try {

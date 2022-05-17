@@ -29,6 +29,8 @@ module.exports = {
     solc: {
       version: "^0.8.13"
     }
-  }
+  },
+
+  contracts_build_directory: path.join(__dirname, "src/dapp/src/contracts")
 
 };

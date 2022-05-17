@@ -64,7 +64,7 @@ flightSuretyApp.events.OracleRequest({
 
     // find oracles that contains index of the request - loop through oracles objects and check their indexes.
     registeredOracles.forEach(async(oracle)=>{
-        if(oracle.oracleIndexes.contains(index)){
+        if(oracle.oracleIndexes.includes(index)){
             
             // let assigned oracle fetch data and invoke callback from contract once complete.
             await oracle.fetchFlightStatus(
@@ -72,7 +72,7 @@ flightSuretyApp.events.OracleRequest({
                 airline,
                 flight,
                 timestamp
-            );
+            ).send();
         }
     })
 });
@@ -129,7 +129,6 @@ function init(){
     fs.readFile('./oracleData.json',(err, data)=>{
        if(data){
            console.log('Hydrating oracles objects from storage ...')
-           // hydrate oracles array if present in memory
            registeredOracles = JSON.parse(data);
        }else{
            console.log('Registering oracles ...')
