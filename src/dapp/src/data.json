@@ -1,0 +1,19 @@
+
+{
+"airlines": ["Virgin Nigeria","Arik Airline", "Max Airways", "Aero Airways","Tulips Airways"],
+"flights": [
+    { 
+        "flight": "KNY 980",
+        "timestamp": "04 Jan 2023 00:12:00 GMT"
+    },
+    { 
+        "flight": "AVL 1200",
+        "timestamp": "08 Jan 2023 04:12:00 GMT"
+    },
+    { 
+        "flight": "VGN 3392",
+        "timestamp": "04 Jan 2023 06:12:00 GMT"
+    }
+],
+"passengers": ["Mahmoud", "Umar", "Sadiq","Salim","Zaks", "Abdul"]
+}
