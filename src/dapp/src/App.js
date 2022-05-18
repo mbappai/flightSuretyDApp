@@ -12,6 +12,7 @@ import {Typography,notification,message} from 'antd';
 import FlightForm from "./components/flightForm/flightForm.js";
 import OperationStatus from "./components/operationStatus/index";
 import FlightReport from './components/flightReport/index'
+import Airlines from './components/airlines/index'
 
 // config
 import Config from './config.json'
@@ -50,8 +51,17 @@ const App = () => {
   }
 
   const setupAirlines = (accounts) =>{
-    
-    setAirlines(accounts);
+
+    let airlinesData=[];
+    for(let i = 0; i <= data['airlines'].length-1; i++){
+      console.log(accounts[i])
+      airlinesData.push({
+        address: accounts[i],
+        name: data['airlines'][i],
+      })
+    }
+    // console.log(airlinesData)
+    setAirlines(airlinesData);
   }
 
   const setupFlights = (accounts) =>{
@@ -65,7 +75,7 @@ const App = () => {
       flightsData.push({
         flight:flight,
         timestamp:timestamp,
-        // airline:  add later if there is need to.
+        airline:  accounts[i]
       });
 
     }
@@ -83,7 +93,7 @@ const App = () => {
     // fetch all accounts created by ganache
     const accounts = await web3.eth.getAccounts(); 
     
-    const airlineAccounts = accounts.slice(0,4);
+    const airlineAccounts = accounts.slice(0,5);
     const passengerAccounts = accounts.slice(11,17);
     const flightAccounts = accounts.slice(0,3);
 
@@ -108,13 +118,14 @@ const App = () => {
   }, [])
   
 
-          return (
-            // <MyComponent drizzle={drizzle} drizzleState={drizzleState} />
+        return (
+          <div className="app">
             <div className="layout">
+
               <Title>Flyora</Title>
               <OperationStatus
                 status = {operationalStatus}
-              />
+                />
 
               <FlightForm
                title={'Insurance'}
@@ -126,9 +137,11 @@ const App = () => {
                 title={'FlightStatus'}
                 flights={flights}
                 btnLabel={'Check Flight Status'}
-               />
-              <FlightReport/>
+                />
+              {/* <FlightReport/> */}
+              <Airlines airlines={airlines}/>
             </div>
+          </div>
           )
           }
 
