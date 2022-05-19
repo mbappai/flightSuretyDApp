@@ -1,6 +1,6 @@
 
 {
-"airlines": ["Virgin Nigeria","Arik Airline", "Max Airways", "Aero Airways","Tulips Airways"],
+"airlines": ["Arik Airways","Egypt Airline", "Max Airways", "Aero Airways","Tulips Airways"],
 "flights": [
     { 
         "flight": "KNY 980",

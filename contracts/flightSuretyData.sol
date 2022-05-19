@@ -29,11 +29,9 @@ contract FlightSuretyData {
         uint256 seedFund;
         uint256 votes;
         string name;
-        
+        address airlineAddress;
     }
     mapping (address => airlineInfo) airlines;
-
-    // variable to store insurancePayouts address => uint256;
 
 
     // Track Passengers Insurance 
@@ -60,6 +58,7 @@ contract FlightSuretyData {
     uint public constant MIN_FLIGHT_INSURANCE_PRICE = 1 ether;
     mapping(address => bool) private authorizedContracts;
     uint256 public registeredAirlinesCount;
+    address public firstAirlineAddress;
 
 
     address[] private _voters = new address[](0);
@@ -83,10 +82,15 @@ contract FlightSuretyData {
     {
         i_contractOwner = msg.sender;
 
+    
+
         // Initialize first airline
         airlines[firstAirline].isRegistered = true;
-        airlines[firstAirline].seedFund = 0; // Don't fund in order to make test pass
+        airlines[firstAirline].seedFund = 10 ether; // Change to 0 in order to make test pass
         airlines[firstAirline].name = 'Arik Airways';
+        airlines[firstAirline].airlineAddress = firstAirline;
+
+        firstAirlineAddress = firstAirline;
 
         registeredAirlinesCount++;
     }
@@ -252,6 +256,7 @@ contract FlightSuretyData {
         s_passengers[passengerAddress].credit = 0;
     }
 
+
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
@@ -288,6 +293,7 @@ contract FlightSuretyData {
         // Register airline
         airlines[newAirline].isRegistered = true;
         airlines[newAirline].name = _name;
+        airlines[newAirline].airlineAddress = newAirline;
         airlines[newAirline].votes = airlines[newAirline].votes.add(1);
 
         // Keep track of registered airlines by incrementing on each successful registration
