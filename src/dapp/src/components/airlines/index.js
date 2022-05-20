@@ -5,7 +5,6 @@ import classes from './styles.module.css'
 
 export default function Airlines ({airlines, flightSuretyApp, owner, firstAirline}){
     
-    console.log('firstAirline', firstAirline);
 
     const registerAirline = async(index)=>{
         const targetAirline = airlines[index];

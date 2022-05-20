@@ -1,6 +1,7 @@
 import React,{useState} from 'react'
 import classes from './form.module.css'
 import dayjs from 'dayjs'
+import web3 from 'web3'
 
 import {Form, Select, Button, Typography } from 'antd';
 
@@ -9,20 +10,46 @@ const {Title} = Typography;
 
 
 
+export default function FlightForm({flights, rand, passengers, title, btnLabel, flightSuretyApp, btnAction}){
 
 
-export default function FlightForm({flights, title, btnLabel, btnAction}){
+  const [selectedFlight, setSelectedFlight] = useState();
+  const [selectedPassenger, setSelectedPassenger] =  useState();
 
-  const [selectedFlight, setSelectedFlight] = useState('')
-
-  function handleChange(value) {
-    console.log(`selected ${value}`);
-    setSelectedFlight(value);
+  function flightHandler(value) {
+    const target = flights.find(flight => flight.flight == value);
+    console.log(target);
+    setSelectedFlight(target);
   }
-  function onFinish(params) {
-    // grab state and
-    // call btnAction
+  function passengerHandler(value){
+    const target = passengers.find(passenger => passenger.name == value);
+    console.log(target)
+    setSelectedPassenger(target)
+    
   }
+  async function onFinish() {
+    console.log(flightSuretyApp)
+    const insuranceAmount = web3.utils.toWei('1','ether')
+    const payload = {
+      flight: selectedFlight.flight,
+      passengerName: selectedPassenger.name,
+      passengerAddress: selectedPassenger.address,
+      timestamp: new Date(selectedFlight.timestamp),
+      airlineAddress: selectedFlight.airlineAddress
+    }
+    // console.log(payload.timestamp.getTime())
+    // call contract here
+    let result = await flightSuretyApp.methods.buyFlightInsurance(
+      payload.flight,
+      payload.passengerName,
+      payload.passengerAddress,
+      payload.timestamp.getTime(),
+      payload.airlineAddress
+    ).send({from:selectedPassenger.address, value: insuranceAmount})
+
+    console.log(result)
+  }
+
 return(
 
   <Form
@@ -30,18 +57,39 @@ return(
       layout='vertical'
       // className="section"
       initialValues={{ remember: true }}
-      // onFinish={onFinish}
+      onFinish={onFinish}
     >
 
 <Title level={4}>{title}</Title>
 
 <div className='section'>
+
+  {/* Passengers selection */}
+<Form.Item label='Passengers' labelAlign='vertical'>
+<Select
+    style={{ width: '100%' }}
+    placeholder={'Select a passenger'}
+    // defaultValue={flights[0].flights}
+    onChange={passengerHandler}
+    optionLabelProp="label"
+    
+  >
+    {passengers.map((passenger,index)=>{
+      return(
+        <Option id={index} value={`${passenger.name}`} label={passenger.name}>{passenger.name} — {`${passenger.address.substring(0,7)}............${passenger.address.substring(13,20)}`} </Option>
+      )
+    })}
+    
+  </Select>
+  </Form.Item>
+
+  {/* Flight selection */}
 <Form.Item label='Flights' labelAlign='vertical'>
 <Select
     style={{ width: '100%' }}
-    // placeholder={flights[0].flights}
+    placeholder={'Select a flight'}
     // defaultValue={flights[0].flights}
-    onChange={handleChange}
+    onChange={flightHandler}
     optionLabelProp="label"
     
   >

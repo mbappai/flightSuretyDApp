@@ -13,6 +13,7 @@ import FlightForm from "./components/flightForm/flightForm.js";
 import OperationStatus from "./components/operationStatus/index";
 import FlightReport from './components/flightReport/index'
 import Airlines from './components/airlines/index'
+import Header from './components/header/header'
 
 // config
 import Config from './config.json'
@@ -22,15 +23,12 @@ import data from './data.json'
 
 const { Title } = Typography;
 
-
-const drizzle = new Drizzle(drizzleOptions);
-
-
-
   let flightSuretyApp;
   let flightSuretyData;
-
-const App = () => {
+  
+  const App = () => {
+    
+    const [rand,setRand] = useState(5);
 
   // const [flightSuretyApp, setFlightSuretyApp] = useState({});
   const [passengers, setPassengers] = useState([])
@@ -44,9 +42,10 @@ const App = () => {
   const setupPassengers = (accounts) =>{
     
     let passengerData = [];
+    const passengerNames = data['passengers'];
     for(let i=0; i<accounts.length; i++){
       passengerData.push({
-        name:data['passengers'][i],
+        name:passengerNames[i],
         address:accounts[i]
       })
     }
@@ -80,7 +79,7 @@ const App = () => {
       flightsData.push({
         flight:flight,
         timestamp:timestamp,
-        airline:  accounts[i]
+        airlineAddress:  accounts[i]
       });
 
     }
@@ -147,7 +146,7 @@ const App = () => {
           <div className="app">
             <div className="layout">
 
-              <Title>Flyora</Title>
+              <Header/>
               <OperationStatus
                 status = {operationalStatus}
                 />
@@ -155,13 +154,18 @@ const App = () => {
               <FlightForm
                title={'Insurance'}
                flights={flights}
-               btnLabel={'Buy Insurance'}
+               passengers = {passengers}
+               btnLabel={'Buy Insurance 1ETH'}
+               flightSuretyApp = {flightSuretyApp}
                />
 
               <FlightForm
                 title={'FlightStatus'}
                 flights={flights}
+                passengers = {passengers}
+                flightSuretyApp = {flightSuretyApp}
                 btnLabel={'Check Flight Status'}
+                rand={rand}
                 />
               {/* <FlightReport/> */}
               <Airlines
