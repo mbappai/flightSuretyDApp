@@ -1,0 +1,8 @@
+.list{
+    background-color: #ffffff;
+    /* max-width: 600px; */
+    width: 700px;
+    padding:10px 20px;
+    border-radius: 10px;
+    margin-bottom: 40px;
+}

@@ -10,7 +10,7 @@ const {Title} = Typography;
 
 
 
-export default function FlightForm({flights, rand, passengers, title, btnLabel, flightSuretyApp, btnAction}){
+export default function FlightForm({flights, passengers, title, btnLabel, flightSuretyApp, btnAction}){
 
 
   const [selectedFlight, setSelectedFlight] = useState();

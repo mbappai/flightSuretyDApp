@@ -151,7 +151,10 @@ contract FlightSuretyApp {
     */  
     function registerFlight (uint _timestamp, string memory _flight ) public requireIsOperational requireAirlineIsActive{
         
+
         bytes32 flightKey = getFlightKey(msg.sender, _flight, _timestamp);
+
+        // require(s_flights[flightKey].flight != _flight);
 
         // TODO: WRITE TO FLIGHTS STORAGE ONLY ONCE
 
