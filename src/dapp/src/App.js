@@ -111,7 +111,7 @@ const { Title } = Typography;
 
     // set state from local if it exist, then return
     const localFlights = JSON.parse(localStorage.getItem('flights'));
-    console.log(localFlights)
+    console.log('post-storage',localFlights)
     if(localFlights.length>0){
       setFlights(localFlights)
       return
@@ -123,14 +123,11 @@ const { Title } = Typography;
     const flights = data['flights'];
 
     // setup flights array
-    for(let i=0; i<accounts.length; i++){
-      
-     let flight = flights[i].flight;
-     let timestamp = flights[i].timestamp;
+    for(let i=0; i<flights.length; i++){
       
       unRegisteredFlights.push({
-        flight:flight,
-        timestamp:new Date(timestamp).getTime(),
+        flight:flights[i].flight,
+        timestamp:new Date(flights[i].timestamp).getTime(),
         airlineAddress:  accounts[i]
       });
     }
@@ -146,7 +143,7 @@ const { Title } = Typography;
       }
     }
 
-    console.log(registeredFlights)
+    console.log('pre-storage',registeredFlights)
     localStorage.setItem('flights', JSON.stringify(registeredFlights))
     setFlights(registeredFlights);
   }
@@ -160,7 +157,7 @@ const { Title } = Typography;
   }
 
   const fetchOperationalStatus = async()=>{
-    let operationalStatus = await flightSuretyApp.methods.isOperational().call();
+    let operationalStatus = await flightSuretyApp.methods.isOperational().call({gas: 4712388, gasPrice: 100000000});
     setOperationalStatus(operationalStatus);
    }
 
@@ -198,7 +195,7 @@ const { Title } = Typography;
     setupAirlines(airlineAccounts);
 
     setupPassengers(passengerAccounts);
-    // setupFlights(flightAccounts, firstAirline);
+    setupFlights(flightAccounts, firstAirline);
 
   }
 
