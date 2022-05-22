@@ -1,7 +1,7 @@
 {
 	"localhost": {
 		"url": "http://localhost:8545",
-		"dataAddress": "0x34efdbC0fa95Cd818E01BEc6a88278999AF04C37",
-		"appAddress": "0x651C1F7B70Dd797649E4B8b27406d36231B04A62"
+		"dataAddress": "0x801663ef3Ef6C915D9a54145147D8a700812cD2D",
+		"appAddress": "0xf9f1021a2e382f71B4311740f07BF850B50bD1c1"
 	}
 }

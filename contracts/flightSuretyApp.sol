@@ -128,6 +128,10 @@ contract FlightSuretyApp {
 
     }
 
+    function isAirlineFunded(address airline) public view returns(bool){
+        return flightSuretyData.isAirlineFunded(airline);
+    }
+
 
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
@@ -154,7 +158,8 @@ contract FlightSuretyApp {
 
         bytes32 flightKey = getFlightKey(msg.sender, _flight, _timestamp);
 
-        // require(s_flights[flightKey].flight != _flight);
+        bool isRegisteredTwice = keccak256(abi.encodePacked((s_flights[flightKey].flight))) == keccak256(abi.encodePacked((_flight)));
+        require(isRegisteredTwice,'DOUBLE REGISTRATION ATTEMPT: The given flight has already been registered');
 
         // TODO: WRITE TO FLIGHTS STORAGE ONLY ONCE
 
@@ -166,6 +171,10 @@ contract FlightSuretyApp {
 
         emit FlightRegistered(flightKey, msg.sender);
 
+    }
+
+    function fundAirline() public payable{
+        flightSuretyData.fund(msg.value);
     }
 
     function buyFlightInsurance ( 
@@ -429,4 +438,6 @@ interface IFlightSuretyData{
     function getPassengerCredit(address passengerAddress) external view returns(uint256);
     function clearPassengerCredit(address passengerAddress) external;
     function pay(address passengerAddress) external returns(uint256);
+    function isAirlineFunded(address airline) external view returns(bool);
+    function fund(uint value) external payable;
 }

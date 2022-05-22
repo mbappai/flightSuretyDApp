@@ -16,7 +16,8 @@ import Config from './config.json'
 import FlightSuretyApp from './contracts/FlightSuretyApp'
 import FlightSuretyData from './contracts/FlightSuretyData'
 import data from './data.json'
-import { unregister } from "./serviceWorker";
+import { register, unregister } from "./serviceWorker";
+import SkeletonAvatar from "antd/lib/skeleton/Avatar";
 
 const { Title } = Typography;
 
@@ -50,48 +51,78 @@ const { Title } = Typography;
 
   const setupAirlines = async(accounts) =>{
 
+    const localData = JSON.parse(localStorage.getItem('registered'));
+    console.log('post-storage:',localData)
+    if(localData){
+      setAirlines(localData)
+      return;
+    }
+
     const airlineNames = data['airlines'];
-    const fee = Web3.utils.toWei('10','ether');
     const firstAirlineAddress = accounts[0];
     let inactiveAirlines=[];
-    let activeAirlines = [];
+    let registeredAirlines = [];
     
     for(let i = 0; i <= airlineNames.length-1; i++){
       inactiveAirlines.push({
         // set the first airline to be registered and funded
-        // registered: accounts[i] == firstAirline? true :false,
-        // isFunded: accounts[i] == firstAirline? true: false,
         address: accounts[i],
         name: airlineNames[i],
       }) 
     }
 
     for(let airline of inactiveAirlines){
-      try{
-        // register airlines
-        // const results = await flightSuretyApp.methods.registerAirline(airline.address, airline.name).send({from:firstAirlineAddress, gas: 4712388, gasPrice: 100000000000});
-        // fund
-        const response = await flightSuretyData.methods.fund().send({from:airline.address, value: fee})
-        activeAirlines.push({address: airline.address, name: airline.name})
-        // console.log('registered:',results)
-        console.log('funded:', response)
-      }catch(err){
-        console.log(err)
-      }
-
+      
+      const response = await flightSuretyApp.methods.registerAirline(airline.address, airline.name).send({from:firstAirlineAddress, gas: 4712388, gasPrice: 100000000})
+      registeredAirlines.push({address: airline.address, name: airline.name})
+      console.log(response)
     }
    
-    setAirlines(activeAirlines);
+    console.log('pre-storage:',registeredAirlines)
+    localStorage.setItem('registered',JSON.stringify(registeredAirlines));
+    setAirlines(registeredAirlines);
   }
+
+  const fundAirline = async(airline) => {
+
+    let fee = Web3.utils.toWei("10", "ether");
+
+    let alreadyFunded = await flightSuretyApp.methods.isAirlineFunded(airline).call();
+    console.log(alreadyFunded)
+    if (alreadyFunded === false) {
+        flightSuretyApp.methods
+        .fundAirline()
+        .send({ from: airline, value: fee }, 
+            (error, result) => {
+                if (error){
+                    console.log(error)
+                    return false;
+                  }
+                else {
+                  console.log(result);
+                  return true;
+                }
+            });
+    }
+}
 
 
   const setupFlights = async(accounts,firstAirline) =>{
+
+    // set state from local if it exist, then return
+    const localFlights = JSON.parse(localStorage.getItem('flights'));
+    console.log(localFlights)
+    if(localFlights.length>0){
+      setFlights(localFlights)
+      return
+    }
 
     const unRegisteredFlights = [];
     const registeredFlights = [];
 
     const flights = data['flights'];
 
+    // setup flights array
     for(let i=0; i<accounts.length; i++){
       
      let flight = flights[i].flight;
@@ -114,6 +145,9 @@ const { Title } = Typography;
         console.log(err)
       }
     }
+
+    console.log(registeredFlights)
+    localStorage.setItem('flights', JSON.stringify(registeredFlights))
     setFlights(registeredFlights);
   }
 
@@ -151,7 +185,7 @@ const { Title } = Typography;
     const firstAirline = accounts[0];
     web3.eth.defaultAccount = firstAirline;
 
-    const airlineAccounts = accounts.slice(0,5);
+    const airlineAccounts = accounts.slice(0,4);
     const passengerAccounts = accounts.slice(11,17);
     const flightAccounts = accounts.slice(1,4);
 
@@ -161,10 +195,10 @@ const { Title } = Typography;
     setupOwner(firstAirline);
 
     // only required during airline registration.
-    // setupAirlines(airlineAccounts);
+    setupAirlines(airlineAccounts);
 
     setupPassengers(passengerAccounts);
-    setupFlights(flightAccounts, firstAirline);
+    // setupFlights(flightAccounts, firstAirline);
 
   }
 

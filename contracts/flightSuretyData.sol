@@ -150,6 +150,10 @@ contract FlightSuretyData {
         return airlines[airline].isRegistered;
     }
 
+    function isAirlineFunded(address airline) external view returns(bool){
+        return airlines[airline].seedFund > 0;
+    }
+
 
     /**
     * @dev Check if airline has paid seed fund
@@ -408,7 +412,7 @@ contract FlightSuretyData {
     *      resulting in insurance payouts, the contract should be self-sustaining
     *
     */   
-    function fund () external payable {
+    function fund (uint value) external payable {
 
         // Require that an airline needs to be registered before paying seed fund.
         require(airlines[msg.sender].isRegistered,"FUNDING BEFORE REGISTRATION: Please ensure airline is registered before paying seed fund");
@@ -416,16 +420,16 @@ contract FlightSuretyData {
         // Require that an airline doesn't pay for seed funds more than once.
         require(airlines[msg.sender].seedFund == 0,"DOUBLE PAYMENT ATTEMPT: Thank you, but you can only pay once.");
 
-        require(msg.value >= MINIMUM_SEED_FUND,"INSUFFICIENT AMOUNT: Please ensure to meet the minimum amount of 10 ether for the seed fund");
+        require(value >= MINIMUM_SEED_FUND,"INSUFFICIENT AMOUNT: Please ensure to meet the minimum amount of 10 ether for the seed fund");
 
         // Transfer value to contract balance
-        payable(address(this)).transfer(msg.value);
+        payable(address(this)).transfer(value);
 
         // Set amount paid by airline.
-        airlines[msg.sender].seedFund = airlines[msg.sender].seedFund.add(msg.value);
+        airlines[msg.sender].seedFund = airlines[msg.sender].seedFund.add(value);
 
         // emit event for successful payment
-        emit HasPayedSeedFund(msg.value,airlines[msg.sender].name,msg.sender);
+        emit HasPayedSeedFund(value,airlines[msg.sender].name,msg.sender);
     }
 
 
