@@ -321,7 +321,6 @@ contract FlightSuretyData {
 
         // Passenger cannot buy insurance for the same flight more than once.
 
-
         // Passengers may pay up to 1 ether for purchasing flight insurance
         require(_insuranceAmount >= MIN_FLIGHT_INSURANCE_PRICE,"INSUFFICIENT AMOUNT: Minimum price for flight insurance is 1 ether");
 

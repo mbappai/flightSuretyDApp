@@ -186,7 +186,7 @@ contract FlightSuretyApp {
         ) public payable requireIsOperational{
 
         // confirm that flight is registered.
-        require(isFlightRegistered(airline, _timestamp, _flight),'FLIGHT NOT FOUND: You can only buy insurance for registered s_flights');
+        require(isFlightRegistered(airline, _timestamp, _flight),'FLIGHT NOT FOUND: You can only buy insurance for registered flights');
 
         flightSuretyData.buyInsurance(_flight, passengerName, passengerAddress, msg.value);
     }

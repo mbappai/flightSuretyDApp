@@ -23,10 +23,10 @@ export default function FlightForm({flights, passengers, title, btnLabel, flight
   }
   function passengerHandler(value){
     const target = passengers.find(passenger => passenger.name == value);
-    console.log(target)
-    setSelectedPassenger(target)
-    
+    console.log(target);
+    setSelectedPassenger(target);  
   }
+
   async function onFinish() {
     console.log(flightSuretyApp)
     const insuranceAmount = web3.utils.toWei('1','ether')
@@ -45,7 +45,7 @@ export default function FlightForm({flights, passengers, title, btnLabel, flight
       payload.passengerAddress,
       payload.timestamp.getTime(),
       payload.airlineAddress
-    ).send({from:selectedPassenger.address, value: insuranceAmount})
+    ).send({from:selectedPassenger.address, value: insuranceAmount, gas: 4712388, gasPrice: 100000000000})
 
     console.log(result)
   }

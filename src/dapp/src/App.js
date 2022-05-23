@@ -141,7 +141,7 @@ const { Title } = Typography;
       console.log(flight)
       try{
         const result = await flightSuretyApp.methods.registerFlight(flight.timestamp,flight.flight).send({from:firstAirline, gas: 4712388, gasPrice: 100000000000 });
-        registeredFlights.push({flight:flight.flight, timestamp: flight.timestamp, airlineAddress: flight.airlineAddress})
+        registeredFlights.push({flight:flight.flight, timestamp: flight.timestamp, airlineAddress: firstAirline})
         console.log('registered flight', registeredFlights);
         console.log(result);
       }catch(err){
