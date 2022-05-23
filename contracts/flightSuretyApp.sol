@@ -159,7 +159,7 @@ contract FlightSuretyApp {
         bytes32 flightKey = getFlightKey(msg.sender, _flight, _timestamp);
 
         bool isRegisteredTwice = keccak256(abi.encodePacked((s_flights[flightKey].flight))) == keccak256(abi.encodePacked((_flight)));
-        require(isRegisteredTwice,'DOUBLE REGISTRATION ATTEMPT: The given flight has already been registered');
+        require(!isRegisteredTwice,'DOUBLE REGISTRATION ATTEMPT: The given flight has already been registered');
 
         // TODO: WRITE TO FLIGHTS STORAGE ONLY ONCE
 
