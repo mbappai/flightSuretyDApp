@@ -2,6 +2,12 @@ import React,{useEffect,useState} from "react";
 import Web3 from 'web3';
 import "./App.css";
 
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+} from "react-router-dom";
+
 
 // components
 import {Typography,notification,message} from 'antd';
@@ -221,27 +227,44 @@ const { Title } = Typography;
           <div className="app">
             <div className="layout">
 
-              <Header/>
-              <OperationStatus
+           <Router>
+           <Header/>
+            <OperationStatus
                 status = {operationalStatus}
                 />
 
-              <InsuranceForm
-               flights={flights}
-               passengers = {passengers}
-               flightSuretyApp = {flightSuretyApp}
-               />
+              <Routes>
+                  <Route exact path="/airlines" element={
+                    <Airlines
+                    airlines={airlines}
+                    flights = {flights}
+                    />
+                  }>
+                    
+                  </Route>
 
-              <FlightStatus
-                flights={flights}
-                passengers = {passengers}
-                flightSuretyApp = {flightSuretyApp}
-                />
-              {/* <FlightReport/> */}
-              <Airlines
-               airlines={airlines}
-               flights = {flights}
-               />
+                  <Route path="/insurance" element={
+                    <InsuranceForm
+                    flights={flights}
+                    passengers = {passengers}
+                    flightSuretyApp = {flightSuretyApp}
+                    />
+                  }>
+                    
+                  </Route>
+
+                  <Route path="/flightstatus" element={
+                    <FlightStatus
+                      flights={flights}
+                      passengers = {passengers}
+                      flightSuretyApp = {flightSuretyApp}
+                      />
+                  }>
+                    
+                  </Route>
+
+          </Routes>
+        </Router>
             </div>
           </div>
           )

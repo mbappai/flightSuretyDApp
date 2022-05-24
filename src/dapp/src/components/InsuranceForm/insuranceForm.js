@@ -69,6 +69,7 @@ return(
 <Select
     style={{ width: '100%' }}
     placeholder={'Select a passenger'}
+    size='large'
     // defaultValue={flights[0].flights}
     onChange={passengerHandler}
     optionLabelProp="label"
@@ -88,6 +89,7 @@ return(
 <Select
     style={{ width: '100%' }}
     placeholder={'Select a flight'}
+    size='large'
     // defaultValue={flights[0].flights}
     onChange={flightHandler}
     optionLabelProp="label"
@@ -103,7 +105,7 @@ return(
   </Form.Item>
 
     <Form.Item>
-        <Button style={{ width: '100%' }} type="primary" htmlType="submit">
+        <Button style={{ width: '100%' }} size='large' type="primary" htmlType="submit">
         Buy Insurance 1ETH
         </Button>
       </Form.Item>
