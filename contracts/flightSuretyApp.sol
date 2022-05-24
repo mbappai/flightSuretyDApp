@@ -208,7 +208,7 @@ contract FlightSuretyApp {
             s_flights[flightKey].statusCode = statusCode;
 
             // When flight is delayed credit passengers with insurance 
-          if (statusCode == STATUS_CODE_LATE_AIRLINE) {
+          if (statusCode != STATUS_CODE_ON_TIME) {
             flightSuretyData.creditInsuree(flight, PASSENGER_CREDIT_VALUE);
           }
 

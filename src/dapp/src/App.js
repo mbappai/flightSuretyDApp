@@ -5,7 +5,8 @@ import "./App.css";
 
 // components
 import {Typography,notification,message} from 'antd';
-import FlightForm from "./components/flightForm/flightForm.js";
+import InsuranceForm from "./components/InsuranceForm/insuranceForm.js";
+import FlightStatus from './components/flightStatus/flightStatus'
 import OperationStatus from "./components/operationStatus/index";
 import FlightReport from './components/flightReport/index'
 import Airlines from './components/airlines/index'
@@ -17,7 +18,6 @@ import FlightSuretyApp from './contracts/FlightSuretyApp'
 import FlightSuretyData from './contracts/FlightSuretyData'
 import data from './data.json'
 import { register, unregister } from "./serviceWorker";
-import SkeletonAvatar from "antd/lib/skeleton/Avatar";
 
 const { Title } = Typography;
 
@@ -226,20 +226,16 @@ const { Title } = Typography;
                 status = {operationalStatus}
                 />
 
-              <FlightForm
-               title={'Insurance'}
+              <InsuranceForm
                flights={flights}
                passengers = {passengers}
-               btnLabel={'Buy Insurance 1ETH'}
                flightSuretyApp = {flightSuretyApp}
                />
 
-              <FlightForm
-                title={'FlightStatus'}
+              <FlightStatus
                 flights={flights}
                 passengers = {passengers}
                 flightSuretyApp = {flightSuretyApp}
-                btnLabel={'Check Flight Status'}
                 />
               {/* <FlightReport/> */}
               <Airlines

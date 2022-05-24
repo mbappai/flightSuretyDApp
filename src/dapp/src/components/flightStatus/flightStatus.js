@@ -1,5 +1,5 @@
 import React,{useState} from 'react'
-import classes from './form.module.css'
+import classes from './styles.module.css'
 import dayjs from 'dayjs'
 import web3 from 'web3'
 
@@ -10,7 +10,7 @@ const {Title} = Typography;
 
 
 
-export default function FlightForm({flights, passengers, title, btnLabel, flightSuretyApp, btnAction}){
+export default function FlightStatus({flights, passengers, title, btnLabel, flightSuretyApp, btnAction}){
 
 
   const [selectedFlight, setSelectedFlight] = useState();
@@ -32,20 +32,16 @@ export default function FlightForm({flights, passengers, title, btnLabel, flight
     const insuranceAmount = web3.utils.toWei('1','ether')
     const payload = {
       flight: selectedFlight.flight,
-      passengerName: selectedPassenger.name,
-      passengerAddress: selectedPassenger.address,
       timestamp: new Date(selectedFlight.timestamp),
       airlineAddress: selectedFlight.airlineAddress
     }
     // console.log(payload.timestamp.getTime())
     // call contract here
-    let result = await flightSuretyApp.methods.buyFlightInsurance(
+    let result = await flightSuretyApp.methods.fetchFlightStatus(
+      payload.airlineAddress,
       payload.flight,
-      payload.passengerName,
-      payload.passengerAddress,
-      payload.timestamp.getTime(),
-      payload.airlineAddress
-    ).send({from:selectedPassenger.address, value: insuranceAmount, gas: 4712388, gasPrice: 100000000000})
+      payload.timestamp.getTime()
+    ).send({from:selectedPassenger.address})
 
     console.log(result)
   }
@@ -60,7 +56,7 @@ return(
       onFinish={onFinish}
     >
 
-<Title level={4}>{title}</Title>
+<Title level={4}>Flight Status</Title>
 
 <div className='section'>
 
@@ -104,7 +100,7 @@ return(
 
     <Form.Item>
         <Button style={{ width: '100%' }} type="primary" htmlType="submit">
-          {btnLabel}
+        Check Flight Status
         </Button>
       </Form.Item>
   </div>
