@@ -38,9 +38,10 @@ class Oracle{
 
     async fetchFlightStatus (index,airline,flight,timestamp){
         // gets fired if oracle request matches one of it's indexes.async
-        console.log('arrived here')
         // generate random flight status code.
-        const statusCode = generateRandomStatusCode();
+        // const statusCode = generateRandomStatusCode();
+        
+        const statusCode = 20  // send the same status code for testing purposes
         console.log(statusCode)
         // invoke call back function from contract once complete.
         await flightSuretyApp.methods.submitOracleResponse(
@@ -48,7 +49,7 @@ class Oracle{
             airline,
             flight,
             timestamp,
-            statusCode )
+            statusCode ).send({from:this.account, gas: 4712388})
     }
     
 }
@@ -85,6 +86,15 @@ flightSuretyApp.events.OracleRequest({
     })
 });
 
+flightSuretyApp.events.OracleReport({
+    fromBlock:0
+},function(err,event){
+    if(err){
+        console.log(err);
+    }
+    console.log(event);
+})
+
 
 
 function persistOracles(oracleData){
@@ -106,12 +116,14 @@ async function registerOracles(){
     
     // fetch accounts created by ganache
     const accounts = await web3.eth.getAccounts();
+    const oracleAccounts = accounts.slice(0,21);
+    console.log(accounts.length)
     web3.eth.defaultAccount = accounts[0];
 
 
     let registrationFee = web3.utils.toWei('1.5','ether');
     // loop over oracles accounts and register each one.
-    for (const account of accounts){
+    for (const account of oracleAccounts){
         let indexes;
         try{
 
@@ -129,7 +141,6 @@ async function registerOracles(){
 
        // store copy of all registered objects in arrays which will be persisted
        registeredOracles.push(oracleObject);
-       console.log(registeredOracles)
     }
 
     // persist oracles in memory.
