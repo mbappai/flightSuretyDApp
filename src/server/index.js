@@ -7,7 +7,7 @@ const init = App.init;
 
 const server = http.createServer(app)
 let currentApp = app;
-const port = 3000;
+const port = 3001;
 
 if (module.hot) {
  module.hot.accept('./server', () => {

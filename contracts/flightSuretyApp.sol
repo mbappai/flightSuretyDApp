@@ -207,7 +207,7 @@ contract FlightSuretyApp {
             // update flight status code
             s_flights[flightKey].statusCode = statusCode;
 
-            // When flight is delayed credit passengers with insurance 
+            // When flight is delayed, credit passengers with insurance 
           if (statusCode != STATUS_CODE_ON_TIME) {
             flightSuretyData.creditInsuree(flight, PASSENGER_CREDIT_VALUE);
           }
@@ -231,16 +231,19 @@ contract FlightSuretyApp {
         return s_flights[flightKey].statusCode;
     }
 
-    function withdrawCredit() public requireIsOperational{
+    function withdrawCredit(address passengerAddress) public requireIsOperational{
          // verify it's be en called from an externally owned account - msg.sender == tx.origin
         require(msg.sender == tx.origin,'WRONG CALLER: Only EOA can call this function');
 
-        
         // transfer funds to passenger account.
-        uint256 creditToPay = flightSuretyData.pay(msg.sender);
+        uint256 creditToPay = flightSuretyData.pay(passengerAddress);
 
-        payable(msg.sender).transfer(creditToPay);
+        payable(passengerAddress).transfer(creditToPay);
  
+    }
+
+    function getPassengerCredit(address passengerAddress) public view requireIsOperational returns(uint){
+        return flightSuretyData.getPassengerCredit(passengerAddress);
     }
 
    
@@ -353,6 +356,7 @@ contract FlightSuretyApp {
                         )
                         external
     {
+        emit OracleReport(airline, flight, timestamp, statusCode);
         require((oracles[msg.sender].indexes[0] == index) || (oracles[msg.sender].indexes[1] == index) || (oracles[msg.sender].indexes[2] == index), "Index does not match oracle request");
 
 
@@ -436,7 +440,7 @@ interface IFlightSuretyData{
     function buyInsurance(string memory flight, string memory passengerName, address passengerAddress, uint256 insuranceAmount) external payable;
     function creditInsuree(string memory flight, uint256 creditAmount) external;
     function getPassengerCredit(address passengerAddress) external view returns(uint256);
-    function clearPassengerCredit(address passengerAddress) external;
+    // function clearPassengerCredit(address passengerAddress) external;
     function pay(address passengerAddress) external returns(uint256);
     function isAirlineFunded(address airline) external view returns(bool);
     function fund(uint value) external payable;

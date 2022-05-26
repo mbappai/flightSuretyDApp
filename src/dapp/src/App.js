@@ -6,6 +6,7 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
+  useNavigate
 } from "react-router-dom";
 
 
@@ -23,17 +24,19 @@ import Config from './config.json'
 import FlightSuretyApp from './contracts/FlightSuretyApp'
 import FlightSuretyData from './contracts/FlightSuretyData'
 import data from './data.json'
-import { register, unregister } from "./serviceWorker";
+
+// import { register, unregister } from "./serviceWorker";
 
 const { Title } = Typography;
 
-  let flightSuretyApp;
-  let flightSuretyData;
+let flightSuretyApp;
+let flightSuretyData;
   
-  const App = () => {
-    
 
-  // const [flightSuretyApp, setFlightSuretyApp] = useState({});
+  // component starts here
+  const App = () => {
+
+    
   const [passengers, setPassengers] = useState([])
   const [airlines, setAirlines] = useState([])
   const [flights, setFlights] = useState([])
@@ -192,8 +195,12 @@ const { Title } = Typography;
     // fetch all accounts created by ganache
     const accounts = await web3.eth.getAccounts(); 
     
+    // first airline is also the owner of the contract
     const firstAirline = accounts[0];
-
+    
+    // authorize app contract to call data contract functions
+    let result = await flightSuretyData.methods.authorizeContract(config.appAddress).send({from:firstAirline, gas: 4712388, gasPrice: 100000000000})
+    console.log(result)
 
     const airlineAccounts = accounts.slice(0,4);
     const passengerAccounts = accounts.slice(11,17);
@@ -205,7 +212,7 @@ const { Title } = Typography;
     setupOwner(firstAirline);
 
     // only required during airline registration.
-    // setupAirlines(airlineAccounts);
+    setupAirlines(airlineAccounts);
 
     setupPassengers(passengerAccounts);
     setupFlights(flightAccounts, firstAirline);
@@ -228,13 +235,21 @@ const { Title } = Typography;
             <div className="layout">
 
            <Router>
-           <Header/>
-            <OperationStatus
+           <Header operationalStatus = {operationalStatus}/>
+            {/* <OperationStatus
                 status = {operationalStatus}
-                />
+                /> */}
 
               <Routes>
-                  <Route exact path="/airlines" element={
+                  <Route exact path='/' element={
+                    <Airlines
+                    airlines={airlines}
+                    flights = {flights}
+                    />
+                  }>
+                    
+                  </Route>
+                  <Route exact path='/airlines' element={
                     <Airlines
                     airlines={airlines}
                     flights = {flights}
@@ -257,6 +272,7 @@ const { Title } = Typography;
                     <FlightStatus
                       flights={flights}
                       passengers = {passengers}
+                      firstAirline = {firstAirline}
                       flightSuretyApp = {flightSuretyApp}
                       />
                   }>

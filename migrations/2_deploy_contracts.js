@@ -15,7 +15,7 @@ module.exports = function(deployer,network, accounts) {
               //             appAddress: FlightSuretyApp.address
               //         }
               //     }
-              //     // fs.writeFileSync(__dirname + '/../src/dapp/config.json',JSON.stringify(config, null, '\t'), 'utf-8');
+                  //  fs.writeFileSync(__dirname + '/../flightSuretyDApp/src/dapp/src/config.json',JSON.stringify(config, null, '\t'), 'utf-8');
               //     // fs.writeFileSync(__dirname + '/../src/server/config.json',JSON.stringify(config, null, '\t'), 'utf-8');
               // });
   );

@@ -1,6 +1,7 @@
-import React,{useEffect} from 'react'
+import React from 'react'
 import {Segmented, Switch, Typography} from 'antd';
 import { useNavigate, useLocation } from "react-router-dom";
+import {Badge} from 'antd'
 
 
 
@@ -8,21 +9,21 @@ import styles from './header.module.css'
 
 const {Title, Text} = Typography
 
-export default function Header(){
+export default function Header({operationalStatus}){
 
   let navigate = useNavigate();
   let location = useLocation();
 
-  console.log(location.pathname.replace(/[/]/,""))
-
   const handleNavigation = (value)=>{
       const route = value.replace(/\s/g,'').toLowerCase();
-      console.log(route)
       navigate(route)
   }
 
+  // setup correct string to use as default value for the segemented tabs
   const defaultRoute = location.pathname === '/flightstatus' ? '/Flight status' : location.pathname;
-const trimmed =   defaultRoute.replace(/[/]/g,'').charAt(0).toUpperCase() + defaultRoute.slice(2);
+
+  // if defaultRoute is flightstatus — Remove forward slash, captilize first word.
+  const trimmed =   defaultRoute.replace(/[/]/g,'').charAt(0).toUpperCase() + defaultRoute.slice(2);
 
 
     return (
@@ -30,8 +31,7 @@ const trimmed =   defaultRoute.replace(/[/]/g,'').charAt(0).toUpperCase() + defa
             <Title>Flyora</Title>
             <Segmented size='large' defaultValue={trimmed} onChange={(value)=>handleNavigation(value)} options={['Airlines','Insurance','Flight status']}/>
             <div className={styles.control}>
-                <Text style={{marginRight:'5px'}}>Operation control</Text>
-            <Switch checkedChildren="On" unCheckedChildren="Off" defaultChecked />
+                <Badge status={operationalStatus?'processing':'error'} text={'Operational Status'}/>
             </div>
         </div>
     )

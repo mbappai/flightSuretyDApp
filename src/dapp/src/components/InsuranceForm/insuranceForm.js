@@ -10,7 +10,7 @@ const {Title} = Typography;
 
 
 
-export default function FlightForm({flights, passengers, flightSuretyApp, btnAction}){
+export default function InsuranceForm({flights, passengers, flightSuretyApp, btnAction}){
 
 
   const [selectedFlight, setSelectedFlight] = useState();
@@ -115,5 +115,3 @@ return(
 
 )
 }
-
-// const flights =['KN20321 (Arik airlines)','KR78392 (Virgin airlines)','MH56473 (Max airlines)','AV3284 (Aero airlines)']

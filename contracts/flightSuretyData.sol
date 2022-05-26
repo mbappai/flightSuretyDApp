@@ -74,15 +74,15 @@ contract FlightSuretyData {
     event FlightInsured(string flight, uint256 insuranceAmount);
  
 
+
     /**
     * @dev Constructor
     *      The deploying account becomes contractOwner
     */
     constructor ( address firstAirline) 
     {
-        i_contractOwner = msg.sender;
+        i_contractOwner = firstAirline;
 
-    
 
         // Initialize first airline
         airlines[firstAirline].isRegistered = true;
@@ -93,6 +93,7 @@ contract FlightSuretyData {
         firstAirlineAddress = firstAirline;
 
         registeredAirlinesCount++;
+
     }
 
     /********************************************************************************************/
@@ -123,7 +124,7 @@ contract FlightSuretyData {
     }
     modifier requireIsAuthorizedCaller()
     {
-        require(authorizedContracts[msg.sender], "Caller is not contract owner");
+        require(authorizedContracts[msg.sender], "Caller is not authorized to call this method");
         _;
     }
 
@@ -179,14 +180,17 @@ contract FlightSuretyData {
         operational = mode;
     }
 
-    function authorizeContract (address contractAddress) external {
-        authorizedContracts[contractAddress] = true;
-    }
+    
 
     function deauthorizeContract (address contractAddress) external requireContractOwner {
         delete authorizedContracts[contractAddress];
     }
 
+    function authorizeContract (address contractAddress) public requireContractOwner {
+         authorizedContracts[contractAddress] = true;
+    }
+
+    
 
     function checkDuplicateVotes(address voter) internal view returns (bool){
         bool isDuplicate = false;
