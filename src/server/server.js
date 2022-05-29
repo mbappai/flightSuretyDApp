@@ -33,13 +33,14 @@ class Oracle{
     }
 
 
+    // gets fired if oracle request matches one of it's indexes
     async fetchFlightStatus (index,airline,flight,timestamp){
-        // gets fired if oracle request matches one of it's indexes.async
+
         // generate random flight status code.
         // const statusCode = generateRandomStatusCode();
         
         const statusCode = 20  // send the same status code for testing purposes
-        console.log(statusCode)
+
         // invoke call back function from contract once complete.
         await flightSuretyApp.methods.submitOracleResponse(
             index,
@@ -57,11 +58,10 @@ flightSuretyApp.events.OracleRequest({
     fromBlock: 0
 }, function (error, event) {
     if (error) console.log(error)
-    console.log(event)
+
     // get request parms.
     let {index,airline,flight,timestamp} = event.returnValues;
 
-    console.log(index,airline,flight,timestamp)
     // find oracles that contains index of the request - loop through oracles objects and check their indexes.
     registeredOracles.forEach(async(oracle)=>{
 
@@ -89,6 +89,7 @@ function persistOracles(oracleData){
 
     // stringify oracle data to write to file
     const data = JSON.stringify(oracleData);
+
     fs.writeFile('./oracleData.json',data,function(err,data){
         if(err) {
             console.log('Error when persisting file',err);
@@ -104,8 +105,10 @@ async function registerOracles(){
     
     // fetch accounts created by ganache
     const accounts = await web3.eth.getAccounts();
+
+    // setup 20 accounts to be used for oracles
     const oracleAccounts = accounts.slice(0,21);
-    console.log(accounts.length)
+
     web3.eth.defaultAccount = accounts[0];
 
 
@@ -114,24 +117,20 @@ async function registerOracles(){
     for (const account of oracleAccounts){
         let indexes;
         try{
-
             await flightSuretyApp.methods.registerOracle().send({from:account, value:registrationFee, gas: 4712388, gasPrice: 200000000});
             indexes = await flightSuretyApp.methods.getMyIndexes().call({from:account});
         }catch(err){
             console.log(err)
         }
 
-    //    console.log(indexes)
-
         // instantiate new oracle objects with address and it's assigned indexes by the contract as constructor params.
        let oracleObject = new Oracle(account,indexes);
-       console.log(oracleObject);
 
        // store copy of all registered objects in arrays which will be persisted
        registeredOracles.push(oracleObject);
     }
 
-    // persist oracles in memory.
+    // persist oracles, by writing oracle objects to file.
     persistOracles(registeredOracles);
     
 }
@@ -163,7 +162,6 @@ function init(){
    
 }
 
-// declare random status code generator.
 
 
 const app = express();
