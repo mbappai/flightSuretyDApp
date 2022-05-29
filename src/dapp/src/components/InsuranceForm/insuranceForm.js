@@ -3,10 +3,11 @@ import classes from './form.module.css'
 import dayjs from 'dayjs'
 import web3 from 'web3'
 
-import {Form, Select, Button, Typography } from 'antd';
+import {Form, Select, Button, Typography, notification } from 'antd';
+import AddressChip from '../addressChip/addressChip';
 
 const { Option } = Select;
-const {Title} = Typography;
+const {Title,Text} = Typography;
 
 
 
@@ -38,18 +39,30 @@ export default function InsuranceForm({flights, passengers, flightSuretyApp, btn
       timestamp: new Date(selectedFlight.timestamp),
       airlineAddress: selectedFlight.airlineAddress
     }
-    // console.log(payload.timestamp.getTime())
-    // call contract here
-    setIsBuying(true)
-    let result = await flightSuretyApp.methods.buyFlightInsurance(
-      payload.flight,
-      payload.passengerName,
-      payload.passengerAddress,
-      payload.timestamp.getTime(),
-      payload.airlineAddress
-    ).send({from:selectedPassenger.address, value: insuranceAmount, gas: 4712388, gasPrice: 100000000000})
+
+    try{
+      setIsBuying(true)
+      let result = await flightSuretyApp.methods.buyFlightInsurance(
+        payload.flight,
+        payload.passengerName,
+        payload.passengerAddress,
+        payload.timestamp.getTime(),
+        payload.airlineAddress
+      ).send({from:selectedPassenger.address, value: insuranceAmount, gas: 4712388, gasPrice: 100000000000})
+        setIsBuying(false)
+
+        // show notification when purchase is successful
+        notification['success']({
+          message: 'Insurance Purchased Successful!',
+          description:`You have successfully insured ${payload.flight}, registered by airline with following address <em>${payload.airlineAddress}</em> ` ,
+        });
+
+    }catch(err){
+      console.log(err)
       setIsBuying(false)
-    console.log(result)
+
+    }
+    // call contract here
   }
 
 return(

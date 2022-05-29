@@ -22,7 +22,6 @@ export default function FlightRegister({flights}){
         renderItem={(flight,index) => (
           <List.Item
             id={index}
-
           >
               <List.Item.Meta
                 title={<Text>{flight.flight}</Text>}

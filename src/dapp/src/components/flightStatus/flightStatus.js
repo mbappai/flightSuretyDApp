@@ -125,7 +125,7 @@ return(
     >
       {passengers.map((passenger,index)=>{
         return(
-          <Option id={index} value={`${passenger.name}`} label={passenger.name}>{passenger.name} — {`${passenger.address.substring(0,7)}............${passenger.address.substring(13,20)}`} </Option>
+          <Option key={index} value={`${passenger.name}`} label={passenger.name}>{passenger.name} — {`${passenger.address.substring(0,7)}............${passenger.address.substring(13,20)}`} </Option>
           )
         })}
     
@@ -144,7 +144,7 @@ return(
     >
     {flights.map((flight,index)=>{
       return(
-        <Option id={index} value={`${flight.flight}`} label={flight.flight}>{flight.flight} — {dayjs(flight.timestamp).format('DD/MM/YYYY')} </Option>
+        <Option key={index} value={`${flight.flight}`} label={flight.flight}>{flight.flight} — {dayjs(flight.timestamp).format('DD/MM/YYYY')} </Option>
         )
       })}
     
