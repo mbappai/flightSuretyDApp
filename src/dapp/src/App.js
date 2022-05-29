@@ -6,7 +6,6 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
-  useNavigate
 } from "react-router-dom";
 
 
@@ -14,8 +13,6 @@ import {
 import {Typography,notification,message} from 'antd';
 import InsuranceForm from "./components/InsuranceForm/insuranceForm.js";
 import FlightStatus from './components/flightStatus/flightStatus'
-import OperationStatus from "./components/operationStatus/index";
-import FlightReport from './components/flightReport/index'
 import Airlines from './components/airlines/index'
 import Header from './components/header/header'
 
@@ -27,7 +24,6 @@ import data from './data.json'
 
 // import { register, unregister } from "./serviceWorker";
 
-const { Title } = Typography;
 
 let flightSuretyApp;
 let flightSuretyData;
@@ -66,7 +62,8 @@ let flightSuretyData;
       setAirlines(localData)
       return;
     }
-
+    
+    
     const airlineNames = data['airlines'];
     const firstAirlineAddress = accounts[0];
     let inactiveAirlines=[];
@@ -79,16 +76,16 @@ let flightSuretyData;
         name: airlineNames[i],
       }) 
     }
-
+    
     for(let airline of inactiveAirlines){
       
-      const response = await flightSuretyApp.methods.registerAirline(airline.address, airline.name).send({from:firstAirlineAddress, gas: 4712388, gasPrice: 100000000})
-      // const paid = await flightSuretyApp.methods.fundAirline().send({from:airline, value: Web3.utils.toWei('10', 'ether')});
+      let isRegistered  = await flightSuretyData.methods.isAirline(airline.address).call({gas: 4712388, gasPrice: 100000000});
+      console.log(isRegistered)
 
+      const response = await flightSuretyApp.methods.registerAirline(airline.address, airline.name).send({from:firstAirlineAddress, gas: 4712388, gasPrice: 100000000})
       registeredAirlines.push({address: airline.address, name: airline.name})
 
-      console.log('registered',response)
-      // console.log('funded',paid)
+      // console.log('registered',response)
     }
    
     console.log('pre-storage:',registeredAirlines)
@@ -96,28 +93,7 @@ let flightSuretyData;
     setAirlines(registeredAirlines);
   }
 
-  const fundAirline = async(airline) => {
-
-    let fee = Web3.utils.toWei("10", "ether");
-
-    let alreadyFunded = await flightSuretyApp.methods.isAirlineFunded(airline).call();
-    console.log(alreadyFunded)
-    if (alreadyFunded === false) {
-        flightSuretyApp.methods
-        .fundAirline()
-        .send({ from: airline, value: fee }, 
-            (error, result) => {
-                if (error){
-                    console.log(error)
-                    return false;
-                  }
-                else {
-                  console.log(result);
-                  return true;
-                }
-            });
-    }
-}
+ 
 
 
   const setupFlights = async(accounts,firstAirline) =>{
@@ -198,9 +174,15 @@ let flightSuretyData;
     // first airline is also the owner of the contract
     const firstAirline = accounts[0];
     
-    // authorize app contract to call data contract functions
-    let result = await flightSuretyData.methods.authorizeContract(config.appAddress).send({from:firstAirline, gas: 4712388, gasPrice: 100000000000})
-    console.log(result)
+    // check if contract has already been authorized
+    let isAuthorized = await flightSuretyData.methods.isAuthorizedCaller(config.appAddress).call();
+    console.log(isAuthorized);
+
+    if(!isAuthorized){
+      // authorize app contract to call data contract functions
+      let result = await flightSuretyData.methods.authorizeContract(config.appAddress).send({from:firstAirline, gas: 4712388, gasPrice: 100000000000})
+      console.log(result)
+    }
 
     const airlineAccounts = accounts.slice(0,4);
     const passengerAccounts = accounts.slice(11,17);
@@ -245,6 +227,8 @@ let flightSuretyData;
                     <Airlines
                     airlines={airlines}
                     flights = {flights}
+                    flightSuretyApp = {flightSuretyApp}
+                    firstAirline = {firstAirline}
                     />
                   }>
                     
@@ -253,6 +237,8 @@ let flightSuretyData;
                     <Airlines
                     airlines={airlines}
                     flights = {flights}
+                    flightSuretyApp = {flightSuretyApp}
+                    firstAirline = {firstAirline}
                     />
                   }>
                     

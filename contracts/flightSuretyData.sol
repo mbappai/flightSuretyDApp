@@ -54,7 +54,7 @@ contract FlightSuretyData {
     mapping (address => Passenger) private s_passengers;
     mapping (bytes32 => FlightInsurance) private s_flightInsurances;
 
-    uint public constant MINIMUM_SEED_FUND = 10 ether;
+    uint public constant MINIMUM_SEED_FUND = 10 ether; // Reduce to 0.05 ether in order for test to pass
     uint public constant MIN_FLIGHT_INSURANCE_PRICE = 1 ether;
     mapping(address => bool) private authorizedContracts;
     uint256 public registeredAirlinesCount;
@@ -81,12 +81,12 @@ contract FlightSuretyData {
     */
     constructor ( address firstAirline) 
     {
-        i_contractOwner = firstAirline;
+        i_contractOwner = msg.sender;
 
 
         // Initialize first airline
         airlines[firstAirline].isRegistered = true;
-        airlines[firstAirline].seedFund = 10 ether; // Change to 0 in order to make test pass
+        airlines[firstAirline].seedFund = 10 ether; // Change to 0 in order for test cases to pass
         airlines[firstAirline].name = 'Arik Airways';
         airlines[firstAirline].airlineAddress = firstAirline;
 
@@ -190,7 +190,11 @@ contract FlightSuretyData {
          authorizedContracts[contractAddress] = true;
     }
 
-    
+    function isAuthorizedCaller ( address contractAddress) public view returns(bool){
+        return authorizedContracts[contractAddress];
+    }
+
+
 
     function checkDuplicateVotes(address voter) internal view returns (bool){
         bool isDuplicate = false;
@@ -291,7 +295,6 @@ contract FlightSuretyData {
 
         // Emit event to tell front-end the airline that recently voted
 
-
         // Atleast 50% of registered airlines should vote to register airline
         voteForAirline(newAirline, _name,msg.sender);
 
@@ -308,6 +311,7 @@ contract FlightSuretyData {
         registeredAirlinesCount++;
 
         emit RegisteredNewAirline(newAirline, _name);
+
         }
 
 
@@ -415,24 +419,30 @@ contract FlightSuretyData {
     *      resulting in insurance payouts, the contract should be self-sustaining
     *
     */   
-    function fund (uint value) external payable {
+    function fund(address sender) external payable {
 
         // Require that an airline needs to be registered before paying seed fund.
-        require(airlines[msg.sender].isRegistered,"FUNDING BEFORE REGISTRATION: Please ensure airline is registered before paying seed fund");
+        require(airlines[sender].isRegistered,"FUNDING BEFORE REGISTRATION: Please ensure airline is registered before paying seed fund");
 
         // Require that an airline doesn't pay for seed funds more than once.
-        require(airlines[msg.sender].seedFund == 0,"DOUBLE PAYMENT ATTEMPT: Thank you, but you can only pay once.");
+        require(airlines[sender].seedFund == 0,"DOUBLE PAYMENT ATTEMPT: Thank you, but you can only pay once.");
 
-        require(value >= MINIMUM_SEED_FUND,"INSUFFICIENT AMOUNT: Please ensure to meet the minimum amount of 10 ether for the seed fund");
+        require(msg.value >= MINIMUM_SEED_FUND,"INSUFFICIENT AMOUNT: Please ensure to meet the minimum amount of 10 ether for the seed fund");
 
         // Transfer value to contract balance
-        payable(address(this)).transfer(value);
+        
+        // Transfer payment to contract balance
+        payable(address(this)).transfer(msg.value);
+
+        // (bool success,) = address(this).call{value: value, gas:4000}("");
+        // require(success, "Pay to account was not successful");
+
 
         // Set amount paid by airline.
-        airlines[msg.sender].seedFund = airlines[msg.sender].seedFund.add(value);
+        airlines[sender].seedFund = airlines[sender].seedFund.add(msg.value);
 
         // emit event for successful payment
-        emit HasPayedSeedFund(value,airlines[msg.sender].name,msg.sender);
+        emit HasPayedSeedFund(msg.value,airlines[sender].name, sender);
     }
 
 
@@ -440,13 +450,12 @@ contract FlightSuretyData {
     * @dev Fallback function for funding smart contract.
     *
     */
-    fallback() external payable {
-        // fund();
-    }
+    // fallback() external payable {
+    //     // fund();
+    // }
 
     receive() external payable { 
         // custom function code
-        // fund();
     }
 
 

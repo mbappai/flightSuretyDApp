@@ -174,7 +174,7 @@ contract FlightSuretyApp {
     }
 
     function fundAirline() public payable{
-        flightSuretyData.fund(msg.value);
+        flightSuretyData.fund{value: msg.value}(msg.sender);
     }
 
     function buyFlightInsurance ( 
@@ -443,5 +443,5 @@ interface IFlightSuretyData{
     // function clearPassengerCredit(address passengerAddress) external;
     function pay(address passengerAddress) external returns(uint256);
     function isAirlineFunded(address airline) external view returns(bool);
-    function fund(uint value) external payable;
+    function fund(address sender) external payable;
 }

@@ -1,7 +1,7 @@
 const path = require("path");
 
 const HDWalletProvider = require("@truffle/hdwallet-provider");
-const mnemonic = 'orchard spy render torch suffer machine blouse weather category athlete emotion tissue';
+const mnemonic = 'foot mass market extend property nothing kingdom banner reveal sword journey hungry';
 
 module.exports = {
   // See <http://truffleframework.com/docs/advanced/configuration>

@@ -91,6 +91,9 @@ export default function FlightStatus({
       console.log('Error claiming insurance',err)
       setIsClaimingInsurance(false);
     }
+    setTimeout(() => {
+      setShowReport(false);
+    }, 3000);
   }
 
 

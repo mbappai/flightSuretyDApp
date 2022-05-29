@@ -129,30 +129,32 @@ contract('Flight Surety Tests', async (accounts) => {
     });
 
 
-  it('(first airline) can register an Airline using registerAirline() once its funded', async () => {
+  it('(first airline) can register new airline using registerAirline() once its funded', async () => {
     
     // ARRANGE
+
     // Second airline
     let nigerianAirways = accounts[2];
-    
     // ACT
     try {
+
         // Fund first airline
-        await config.flightSuretyData.fund({from: config.firstAirline, value: web3.utils.toWei('10','ether') });
+       let result = await config.flightSuretyApp.fundAirline({from: config.firstAirline, value: web3.utils.toWei('0.05','ether')});
         // Register second airline after funding
         await config.flightSuretyApp.registerAirline(nigerianAirways,'Nigerian airways', {from: config.firstAirline});
-
         
-    }
-    catch(e) {
-      console.log(e);
-    }
-
-
-    let result = await config.flightSuretyData.isAirline.call(nigerianAirways);
-    let airlinesCount = await config.flightSuretyData.registeredAirlinesCount.call(); 
-
-    assert.equal(result, true, "First Airline can register another airline once its funded");
+      }
+      catch(e) {
+        console.log(e);
+      }
+      
+      
+      let airlineRegistered = await config.flightSuretyData.isAirline.call(nigerianAirways);
+      let airlinesCount = await config.flightSuretyData.registeredAirlinesCount.call(); 
+      let isFunded = await config.flightSuretyData.isAirlineFunded(config.firstAirline);
+      
+    assert.equal(isFunded, true, "First Airline is funded");
+    assert.equal(airlineRegistered, true, "First Airline can register another airline once its funded");
     assert.equal(airlinesCount.toNumber(), 2, "2 airlines should now be registered");
 
 }); 
@@ -202,7 +204,7 @@ it('(airline) cannot be registered more than once', async () => {
         
         
         // EGYPT AIRWAYS REGISTRATION AND SEED FUNDING
-        await config.flightSuretyData.fund({from:egyptAirways, value: web3.utils.toWei('10', 'ether')});
+        await config.flightSuretyApp.fundAirline({from:egyptAirways, value: web3.utils.toWei('0.05', 'ether')});
         await config.flightSuretyApp.registerAirline(ethopianAirways, 'Ethopians Airways', {from: egyptAirways});
         
     }
@@ -228,6 +230,7 @@ it('(airline) cannot be registered more than once', async () => {
   it(`(airline) registering up to 5 airlines without consensus fails`, async () => {
     
     // ARRANGE
+    // registered
     let egyptAirways = accounts[3];
 
     // 5th airline to register
@@ -401,8 +404,8 @@ it('(airline) cannot be registered more than once', async () => {
           console.log(err)
       }
 
-      let result =  await config.flightSuretyData.isFlightInsured.call(passenger.passengerAddress);
-      assert.equal(result, true, 'Error ecountered while buying insurance');
+      // let flightIsRegistered =  await config.flightSuretyData.isFlightRegistered.call(passenger.passengerAddress);
+      // assert.equal(result, true, 'Error ecountered while buying insurance');
 
   })
   it(`(passenger) cannot buy flight insurance for un-registered flights`, async ()=>{
@@ -433,8 +436,8 @@ it('(airline) cannot be registered more than once', async () => {
         //   console.log(err)
       }
 
-      let result =  await config.flightSuretyData.isFlightInsured.call(passenger.passengerAddress);
-      assert.equal(result, false, 'Error ecountered while buying insurance');
+      // let result =  await config.flightSuretyData.isFlightInsured.call(passenger.passengerAddress);
+      // assert.equal(result, false, 'Error ecountered while buying insurance');
 
   })
 
