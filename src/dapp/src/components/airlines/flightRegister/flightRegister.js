@@ -2,6 +2,7 @@ import React,{useState} from 'react'
 import {Typography, List, Button} from 'antd'
 
 import classes from './flightRegister.module.css'
+import AddressChip from '../../addressChip/addressChip';
 
 const {Text,Title} = Typography;
 
@@ -25,7 +26,12 @@ export default function FlightRegister({flights}){
           >
               <List.Item.Meta
                 title={<Text>{flight.flight}</Text>}
-                description={`${flight.airlineAddress.substring(0,7)}............${flight.airlineAddress.substring(8,13)}.......${flight.airlineAddress.substring(14,20)}`}
+                description={
+                 <div>
+                  <Text type='secondary'>Arik Airlines </Text>
+                  <AddressChip address={flight.airlineAddress}/>
+                  </div>
+                  }
               />
           </List.Item>
         )}

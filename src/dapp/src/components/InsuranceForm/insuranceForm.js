@@ -15,6 +15,7 @@ export default function InsuranceForm({flights, passengers, flightSuretyApp, btn
 
   const [selectedFlight, setSelectedFlight] = useState();
   const [selectedPassenger, setSelectedPassenger] =  useState();
+  const [isBuying, setIsBuying] = useState(false);
 
   function flightHandler(value) {
     const target = flights.find(flight => flight.flight == value);
@@ -39,6 +40,7 @@ export default function InsuranceForm({flights, passengers, flightSuretyApp, btn
     }
     // console.log(payload.timestamp.getTime())
     // call contract here
+    setIsBuying(true)
     let result = await flightSuretyApp.methods.buyFlightInsurance(
       payload.flight,
       payload.passengerName,
@@ -46,7 +48,7 @@ export default function InsuranceForm({flights, passengers, flightSuretyApp, btn
       payload.timestamp.getTime(),
       payload.airlineAddress
     ).send({from:selectedPassenger.address, value: insuranceAmount, gas: 4712388, gasPrice: 100000000000})
-
+      setIsBuying(false)
     console.log(result)
   }
 
@@ -77,7 +79,7 @@ return(
   >
     {passengers.map((passenger,index)=>{
       return(
-        <Option id={index} value={`${passenger.name}`} label={passenger.name}>{passenger.name} — {`${passenger.address.substring(0,7)}............${passenger.address.substring(13,20)}`} </Option>
+        <Option key={index} value={`${passenger.name}`} label={passenger.name}>{passenger.name} — {`${passenger.address.substring(0,7)}............${passenger.address.substring(13,20)}`} </Option>
       )
     })}
     
@@ -97,7 +99,7 @@ return(
   >
     {flights.map((flight,index)=>{
       return(
-        <Option id={index} value={`${flight.flight}`} label={flight.flight}>{flight.flight} — {dayjs(flight.timestamp).format('DD/MM/YYYY')} </Option>
+        <Option key={index} value={`${flight.flight}`} label={flight.flight}>{flight.flight} — {dayjs(flight.timestamp).format('DD/MM/YYYY')} </Option>
       )
     })}
     
@@ -105,7 +107,7 @@ return(
   </Form.Item>
 
     <Form.Item>
-        <Button style={{ width: '100%' }} size='large' type="primary" htmlType="submit">
+        <Button shape='round' style={{ width: '100%' }} loading={isBuying} size='large' type="primary" htmlType="submit">
         Buy Insurance 1ETH
         </Button>
       </Form.Item>

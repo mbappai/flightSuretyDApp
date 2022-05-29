@@ -74,6 +74,7 @@ let flightSuretyData;
         // set the first airline to be registered and funded
         address: accounts[i+1], // account[0] is the first airline, hence no need to re-register
         name: airlineNames[i],
+        // isFunded: false
       }) 
     }
     
@@ -113,20 +114,21 @@ let flightSuretyData;
 
     // setup flights array
     for(let i=0; i<flights.length; i++){
-      
+      console.log(airlines[i])
       unRegisteredFlights.push({
         flight:flights[i].flight,
         timestamp:new Date(flights[i].timestamp).getTime(),
-        airlineAddress:  accounts[i]
+        // airlineAddress:  airlines[i].address,
       });
     }
+
 
     // register flights in contract
     for(let flight of unRegisteredFlights){
       console.log(flight)
       try{
         const result = await flightSuretyApp.methods.registerFlight(flight.timestamp,flight.flight).send({from:firstAirline, gas: 4712388, gasPrice: 100000000000 });
-        registeredFlights.push({flight:flight.flight, timestamp: flight.timestamp, airlineAddress: firstAirline})
+        registeredFlights.push({flight:flight.flight, timestamp: flight.timestamp, airlineAddress: firstAirline, airlineName: flight.airlineName})
         console.log('registered flight', registeredFlights);
         console.log(result);
       }catch(err){

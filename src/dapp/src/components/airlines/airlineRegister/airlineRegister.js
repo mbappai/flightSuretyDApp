@@ -2,6 +2,8 @@ import React,{useState} from 'react'
 import { List,Typography,Button} from 'antd'
 import web3 from 'web3'
 
+import AddressChip from '../../addressChip/addressChip'
+
 
 import classes from './airlineRegister.module.css'
 
@@ -42,12 +44,12 @@ async function fundAirline (targetIndex){
         renderItem={(airline,index) => (
           <List.Item
             key={index}
-            extra = {<Button onClick={()=>fundAirline(index)} loading={isFunding} type='secondary'> Fund Airline </Button>}
+            extra = {<Button onClick={()=>fundAirline(index)} loading={isFunding} shape='round' type='primary'> Fund Airline </Button>}
           >
             {/* <Skeleton avatar title={false} loading={item.loading} active> */}
               <List.Item.Meta
                 title={<Text>{airline.name}</Text>}
-                description={ <Text className={classes.address}> {`${airline.address.substring(0,7)}............${airline.address.substring(8,20)}.......${airline.address.substring(21)}` }</Text> }
+                description={ <AddressChip address={airline.address}/> }
               />
             {/* </Skeleton> */}
           </List.Item>

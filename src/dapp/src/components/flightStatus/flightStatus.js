@@ -152,7 +152,7 @@ return(
   </Form.Item>
 
     <Form.Item>
-        <Button style={{ width: '100%' }} disabled={showReport} loading={isFetching} size='large' type="primary" htmlType="submit">
+        <Button style={{ width: '100%' }} shape='round' disabled={showReport} loading={isFetching} size='large' type="primary" htmlType="submit">
         Check Flight Status
         </Button>
       </Form.Item>
