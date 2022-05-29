@@ -32,9 +32,6 @@ class Oracle{
         this.indexes = indexes
     }
 
-    // get oracleIndexes(){
-    //     return this.indexes;
-    // }
 
     async fetchFlightStatus (index,airline,flight,timestamp){
         // gets fired if oracle request matches one of it's indexes.async
@@ -85,15 +82,6 @@ flightSuretyApp.events.OracleRequest({
         }
     })
 });
-
-flightSuretyApp.events.OracleReport({
-    fromBlock:0
-},function(err,event){
-    if(err){
-        console.log(err);
-    }
-    console.log(event);
-})
 
 
 

@@ -1,10 +1,23 @@
 # FlightSurety
 
-FlightSurety is a flight delay insurance for passengers. Passengers will have to purchase an insurance prior to thier flight.
+FlightSurety is a decentralised application for purchasing insurance for flights registered by registered airlines. Passengers who have insured a flight will be able to receive insurance payouts whenever there's any flight delay caused by the airlines. These payouts will be executed automatically solely based on the flight status of the insured flights, without needing approval from any third-party.  
 
-## Goal
+## For reviewer
+It is important for the reviewer of this project to know that the entire transactions carried out in this project was done by the first airline registered.
 
-The goal of this Dapp is to check the flight status of your ticket to determine whether or not you are eligible to receive the insurance money incase of any delay caused by the airline your booked with.  
+## Components of the dapp
+
+### Register and fund airlines
+The dapp will have an interface to register airlines that will register and provide seed funding for which insurance to insurees will be paid from.
+
+### Register flights
+This interface features flights that have been registered by active airlines, which makes the flights eligible to be insured.
+
+### Purchase insurance
+This interface will allow for a passenger to purchase insurance for flights that have been registered by active airlines(registered and funded).
+
+### Check flight status
+This is the meaty part of the dapp that allows the passengers to check the status of the flights they bought insurance for, in order to determine whether or not they are eligible to receive insurance payouts.  
 
 The eligibility of the insurance payout is determined by the following possibilities that could cause a flight delay.  
 
@@ -15,27 +28,10 @@ The eligibility of the insurance payout is determined by the following possibili
 
 If a flight gets delayed due to any of the afforementioned possibilities, then the passengers gets paid `1.5X` the amount they paid for the insurance.  
 
-## Components of the architecture
-
-There are two main parts to the application.
-
-1. **On-chain**: This involves the smart contracts which contains the logic of the flight insurance. The contract can further be sub-divided into two parts.  
-
-  - *Data Contract*: Which holds the state of the contract on the blockchain.
-  - *App Contract*: Which holds the business logic of our application.  
-
-This allows for flexibility incase we decided to change our business logic without interfering with the data contract.
-
-2. **Off-chain**: This involves the client side which the passenger will use for purchasing the insurance as well as checking the flight status of their flight.
-  - *Server App*: Which represents the oracles will feed data to the smart-contract and oracle code.
-
-## How to check flight status of air tickets in a smart contract?
-
-> One thing to keep in mind is that, by defaut, smart contracts are only able to access data that is stored on the blockchain (on-chain data). To access data that resides outside the blockchain (off-chain data) requires that help of an oracle.
 
 ## Install
 
-This repository contains Smart Contract code in Solidity (using Truffle), tests (also using Truffle), dApp scaffolding (using HTML, CSS and JS) and server app scaffolding.
+This repository contains Smart Contract code in Solidity (using Truffle), tests (also using Truffle), front-end built using `create-react-app` and server app in `nodeJS` which mimics the behaviour of an oracle.
 
 To install, download or clone the repo, then:
 
@@ -44,10 +40,14 @@ To install, download or clone the repo, then:
 
 ## Develop Client
 
-To run truffle tests:
+You need to move into the `src/dapp` directory and run the following command  
 
-`truffle test ./test/flightSurety.js`
-`truffle test ./test/oracles.js`
+`npm install`
+
+To run truffle tests for smart-contract and oracles: Execute the following commands in the root directory.  
+
+`truffle test ./test/flightSurety.js` — For testing smart-contract code
+`truffle test ./test/oracles.js` — For testing server app which mimics oracles.
 
 To use the dapp:
 
@@ -64,9 +64,6 @@ To view dapp:
 `truffle test ./test/oracles.js`
 
 ## Deploy
-
-To build dapp for prod:
-`npm run dapp:prod`
 
 Deploy the contents of the ./dapp folder
 
