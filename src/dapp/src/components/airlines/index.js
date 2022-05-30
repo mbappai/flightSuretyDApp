@@ -3,9 +3,11 @@ import React,{useState} from 'react'
 import AirlineRegister from './airlineRegister/airlineRegister'
 import FlightRegister from './flightRegister/flightRegister'
 
+import { Skeleton } from 'antd'
 
 
-export default function Airlines ({airlines, flights, flightSuretyApp, firstAirline}){
+
+export default function Airlines ({airlines, flights, flightSuretyApp, firstAirline, isLoadingAirlines, isLoadingFlights}){
     
 
     return(
@@ -13,13 +15,14 @@ export default function Airlines ({airlines, flights, flightSuretyApp, firstAirl
         <AirlineRegister
         airlines ={airlines}
         flightSuretyApp = {flightSuretyApp}
+        isLoadingAirlines = {isLoadingAirlines}
         firstAirline = {firstAirline}
         />
 
+
         <FlightRegister
           flights = {flights}
-          // flightSuretyApp = {flightSuretyApp}
-          // firstAirline = {firstAirline}
+          isLoadingFlights = {isLoadingFlights}
         />   
       </div>
     )

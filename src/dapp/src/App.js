@@ -38,6 +38,8 @@ let flightSuretyData;
   const [flights, setFlights] = useState([])
   const [owner, setOwner] = useState('')
   const [firstAirline, setFirstAirline] = useState();
+  const [isLoadingAirlines, setIsLoadingAirlines] = useState(true);
+  const [isLoadingFlights, setIsLoadingFlights] = useState(true);
 
   const [operationalStatus, setOperationalStatus] = useState(false);
 
@@ -59,7 +61,8 @@ let flightSuretyData;
     const localData = JSON.parse(localStorage.getItem('registered'));
     if(localData){
       console.log('post-storage:',localData)
-      setAirlines(localData)
+      setAirlines(localData);
+      setIsLoadingAirlines(false);
       return;
     }
     
@@ -67,32 +70,29 @@ let flightSuretyData;
     const airlineNames = data['airlines'];
     const firstAirlineAddress = accounts[0];
     let inactiveAirlines=[];
-    let registeredAirlines = [];
+    let activeAirlines = [];
     
     for(let i = 0; i <= airlineNames.length-1; i++){
       inactiveAirlines.push({
         // set the first airline to be registered and funded
         address: accounts[i+1], // account[0] is the first airline, hence no need to re-register
         name: airlineNames[i],
-        // isFunded: false
       }) 
     }
     
     for(let airline of inactiveAirlines){
       
-      let isRegistered  = await flightSuretyData.methods.isAirline(airline.address).call({gas: 4712388, gasPrice: 100000000});
-      console.log(isRegistered)
+      // await flightSuretyData.methods.isAirline(airline.address).call({gas: 4712388, gasPrice: 100000000});
+      await flightSuretyApp.methods.registerAirline(airline.address, airline.name).send({from:firstAirlineAddress, gas: 4712388, gasPrice: 100000000})
+      await flightSuretyApp.methods.fundAirline().send({from:airline.address, value: Web3.utils.toWei('10', 'ether')});
+      activeAirlines.push({address: airline.address, name: airline.name})
+      setIsLoadingAirlines(false);
 
-      const response = await flightSuretyApp.methods.registerAirline(airline.address, airline.name).send({from:firstAirlineAddress, gas: 4712388, gasPrice: 100000000})
-      let result  = await flightSuretyApp.methods.fundAirline().send({from:airline.address, value: Web3.utils.toWei('10', 'ether')});
-      registeredAirlines.push({address: airline.address, name: airline.name})
-
-      console.log('isFunded',result);
     }
    
-    console.log('pre-storage:',registeredAirlines)
-    localStorage.setItem('registered',JSON.stringify(registeredAirlines));
-    setAirlines(registeredAirlines);
+    console.log('pre-storage:',activeAirlines)
+    localStorage.setItem('registered',JSON.stringify(activeAirlines));
+    setAirlines(activeAirlines);
   }
 
  
@@ -105,6 +105,7 @@ let flightSuretyData;
     if(localFlights){
       console.log('post-storage',localFlights)
       setFlights(localFlights)
+      setIsLoadingFlights(false);
       return
     }
 
@@ -130,16 +131,17 @@ let flightSuretyData;
 
         // push registered flights into array to be used for setting state
         registeredFlights.push({flight:flight.flight, timestamp: flight.timestamp, airlineAddress: firstAirline, airlineName: flight.airlineName});
-
+        setIsLoadingFlights(false);
       }catch(err){
         console.log(err)
         return;
       }
     }
 
-    console.log('pre-storage',registeredFlights)
     // save registered flights to local storage after registering for the first time.
     localStorage.setItem('flights', JSON.stringify(registeredFlights))
+
+    // set registered flights to storage
     setFlights(registeredFlights);
   }
 
@@ -228,6 +230,8 @@ let flightSuretyData;
                     <Airlines
                     airlines={airlines}
                     flights = {flights}
+                    isLoadingAirlines = {isLoadingAirlines}
+                    isLoadingFlights = {isLoadingFlights}
                     flightSuretyApp = {flightSuretyApp}
                     firstAirline = {firstAirline}
                     />
@@ -238,6 +242,8 @@ let flightSuretyData;
                     <Airlines
                     airlines={airlines}
                     flights = {flights}
+                    isLoadingAirlines = {isLoadingAirlines}
+                    isLoadingFlights = {isLoadingFlights}
                     flightSuretyApp = {flightSuretyApp}
                     firstAirline = {firstAirline}
                     />

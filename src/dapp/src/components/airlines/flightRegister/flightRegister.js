@@ -7,7 +7,7 @@ import AddressChip from '../../addressChip/addressChip';
 const {Text,Title} = Typography;
 
 
-export default function FlightRegister({flights}){
+export default function FlightRegister({flights,isLoadingFlights}){
     
     
  return(
@@ -16,7 +16,7 @@ export default function FlightRegister({flights}){
 <Title level={4}>Registered Flights</Title>
         <List
         className={classes.list}
-        // loading={initLoading}
+        loading={isLoadingFlights}
         itemLayout="horizontal"
         dataSource={flights}
         renderItem={(flight,index) => (

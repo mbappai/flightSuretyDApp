@@ -1,6 +1,5 @@
-import React,{useState} from 'react'
-import { List,Typography,Button, Badge} from 'antd'
-import web3 from 'web3'
+import React from 'react'
+import { List,Typography, Badge} from 'antd'
 
 import AddressChip from '../../addressChip/addressChip'
 
@@ -9,26 +8,7 @@ import classes from './airlineRegister.module.css'
 
 const {Text,Title} = Typography;
 
-export default function AirlineRegister ({airlines, flightSuretyApp, firstAirline}){
-
-  const [isFunding, setIsFunding] = useState(false);
-    
-async function fundAirline (targetIndex){
-  const targetAirline = airlines.find((airline,index)=> targetIndex === index)
-  const fee = web3.utils.toWei('10', 'ether');
-  try{
-    setIsFunding(true)
-
-    let result  = await flightSuretyApp.methods.fundAirline().send({from:targetAirline.address, value: fee});
-    setIsFunding(false)
-    console.log(result)
-  }catch(err){
-    setIsFunding(false)
-    console.log(err)
-  }
-
-  }
-
+export default function AirlineRegister ({airlines, isLoadingAirlines}){
 
     return(
 
@@ -37,19 +17,18 @@ async function fundAirline (targetIndex){
       <Title level={4}>Airlines registration and funding</Title>
         <List
         className={classes.list}
-        loading={airlines?false:true}
+        loading={isLoadingAirlines}
         dataSource={airlines}
         renderItem={(airline,index) => (
           <List.Item
             key={index}
             extra = {<Badge status='success' text='Active'/>}
           >
-            {/* <Skeleton avatar title={false} loading={item.loading} active> */}
+
               <List.Item.Meta
                 title={<Text>{airline.name}</Text>}
                 description={ <AddressChip address={airline.address}/> }
               />
-            {/* </Skeleton> */}
           </List.Item>
         )}
       />
