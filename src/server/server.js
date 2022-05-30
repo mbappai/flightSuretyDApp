@@ -125,6 +125,7 @@ async function registerOracles(){
 
         // instantiate new oracle objects with address and it's assigned indexes by the contract as constructor params.
        let oracleObject = new Oracle(account,indexes);
+       console.log(oracleObject)
 
        // store copy of all registered objects in arrays which will be persisted
        registeredOracles.push(oracleObject);

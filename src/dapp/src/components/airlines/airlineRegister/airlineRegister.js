@@ -1,5 +1,5 @@
 import React,{useState} from 'react'
-import { List,Typography,Button} from 'antd'
+import { List,Typography,Button, Badge} from 'antd'
 import web3 from 'web3'
 
 import AddressChip from '../../addressChip/addressChip'
@@ -12,7 +12,6 @@ const {Text,Title} = Typography;
 export default function AirlineRegister ({airlines, flightSuretyApp, firstAirline}){
 
   const [isFunding, setIsFunding] = useState(false);
-  const [isFunded, setIsFunded] = useState(false);
     
 async function fundAirline (targetIndex){
   const targetAirline = airlines.find((airline,index)=> targetIndex === index)
@@ -38,13 +37,12 @@ async function fundAirline (targetIndex){
       <Title level={4}>Airlines registration and funding</Title>
         <List
         className={classes.list}
-        // loading={initLoading}
-        // itemLayout="vertical"
+        loading={airlines?false:true}
         dataSource={airlines}
         renderItem={(airline,index) => (
           <List.Item
             key={index}
-            extra = {<Button onClick={()=>fundAirline(index)} loading={isFunding} shape='round' type='primary'> Fund Airline </Button>}
+            extra = {<Badge status='success' text='Active'/>}
           >
             {/* <Skeleton avatar title={false} loading={item.loading} active> */}
               <List.Item.Meta

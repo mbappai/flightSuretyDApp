@@ -84,9 +84,10 @@ let flightSuretyData;
       console.log(isRegistered)
 
       const response = await flightSuretyApp.methods.registerAirline(airline.address, airline.name).send({from:firstAirlineAddress, gas: 4712388, gasPrice: 100000000})
+      let result  = await flightSuretyApp.methods.fundAirline().send({from:airline.address, value: Web3.utils.toWei('10', 'ether')});
       registeredAirlines.push({address: airline.address, name: airline.name})
 
-      // console.log('registered',response)
+      console.log('isFunded',result);
     }
    
     console.log('pre-storage:',registeredAirlines)
@@ -114,23 +115,22 @@ let flightSuretyData;
 
     // setup flights array
     for(let i=0; i<flights.length; i++){
-      console.log(airlines[i])
       unRegisteredFlights.push({
         flight:flights[i].flight,
         timestamp:new Date(flights[i].timestamp).getTime(),
-        // airlineAddress:  airlines[i].address,
       });
     }
 
 
     // register flights in contract
     for(let flight of unRegisteredFlights){
-      console.log(flight)
       try{
-        const result = await flightSuretyApp.methods.registerFlight(flight.timestamp,flight.flight).send({from:firstAirline, gas: 4712388, gasPrice: 100000000000 });
+        // call contract function to register flight
+        await flightSuretyApp.methods.registerFlight(flight.timestamp,flight.flight).send({from:firstAirline, gas: 4712388, gasPrice: 100000000000 });
+
+        // push registered flights into array to be used for setting state
         registeredFlights.push({flight:flight.flight, timestamp: flight.timestamp, airlineAddress: firstAirline, airlineName: flight.airlineName});
-        console.log('registered flight', registeredFlights);
-        console.log(result);
+
       }catch(err){
         console.log(err)
         return;
@@ -138,6 +138,7 @@ let flightSuretyData;
     }
 
     console.log('pre-storage',registeredFlights)
+    // save registered flights to local storage after registering for the first time.
     localStorage.setItem('flights', JSON.stringify(registeredFlights))
     setFlights(registeredFlights);
   }
@@ -220,9 +221,7 @@ let flightSuretyData;
 
            <Router>
            <Header operationalStatus = {operationalStatus}/>
-            {/* <OperationStatus
-                status = {operationalStatus}
-                /> */}
+    
 
               <Routes>
                   <Route exact path='/' element={
