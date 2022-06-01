@@ -2,7 +2,7 @@
 
 FlightSurety is a decentralised application for purchasing insurance for flights registered by registered airlines. Passengers who have insured a flight will be able to receive insurance payouts whenever there's any flight delay caused by the airlines. These payouts will be executed automatically solely based on the flight status of the insured flights, without needing approval from any third-party.  
 
-[![](./assets/insurance-purchase.png)](./assets/flyora.mp4)
+![](./assets/flyora.mp4)
 
 
 ## Components of the dapp
