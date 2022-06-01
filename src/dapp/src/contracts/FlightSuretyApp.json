@@ -29650,12 +29650,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0x6ea503ac72e3e531Ff7fce3D3E2A09F6D0900Df9",
-      "transactionHash": "0x0bb1e97ecb4f74f721992e1e63012f8e1bedb5d3e391fe5554c0615ed0195050"
+      "address": "0xF332C73696130222aEFD27Bd8F0AF02bfe4D5a61",
+      "transactionHash": "0xf0be307dd26ca02fafcf516a5c99b7cdadf1575e8e3839ebf75eff394677c5c9"
     }
   },
   "schemaVersion": "3.4.7",
-  "updatedAt": "2022-05-30T13:19:46.659Z",
+  "updatedAt": "2022-06-01T12:23:09.383Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",

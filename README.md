@@ -2,22 +2,33 @@
 
 FlightSurety is a decentralised application for purchasing insurance for flights registered by registered airlines. Passengers who have insured a flight will be able to receive insurance payouts whenever there's any flight delay caused by the airlines. These payouts will be executed automatically solely based on the flight status of the insured flights, without needing approval from any third-party.  
 
-## For reviewer
-It is important for the reviewer of this project to know that the entire transactions carried out in this project was done by the first airline registered.
+![Airline registration](./assets/flyora.mp4)
+
 
 ## Components of the dapp
 
 ### Register and fund airlines
 The dapp will have an interface to register airlines that will register and provide seed funding for which insurance to insurees will be paid from.
 
+![Airline registration](./assets/airlines-registration.png)
+
+
+
 ### Register flights
 This interface features flights that have been registered by active airlines, which makes the flights eligible to be insured.
+
+![Airline registration](./assets/airlines-registration.png)  
 
 ### Purchase insurance
 This interface will allow for a passenger to purchase insurance for flights that have been registered by active airlines(registered and funded).
 
+![Airline registration](./assets/insurance-purchase.png)  
+
+
 ### Check flight status
-This is the meaty part of the dapp that allows the passengers to check the status of the flights they bought insurance for, in order to determine whether or not they are eligible to receive insurance payouts.  
+This is the meaty part of the dapp that allows the passengers to check the status of the flights they bought insurance for, in order to determine whether or not they are eligible to claim insurance payouts.  
+
+![Airline registration](./assets/claim-insurance.png)  
 
 The eligibility of the insurance payout is determined by the following possibilities that could cause a flight delay.  
 
